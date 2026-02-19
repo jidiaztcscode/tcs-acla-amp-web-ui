@@ -1,0 +1,11 @@
+<div class="auth-login-container">
+  <h2>Inicio de sesión</h2>
+  <button (click)="login()">Iniciar sesión con Microsoft</button>
+  <button (click)="logout()" *ngIf="loginDisplay">Cerrar sesión</button>
+  <div *ngIf="loginDisplay" class="user-status">
+    <span>Sesión iniciada</span>
+  </div>
+  <div *ngIf="!loginDisplay" class="user-status">
+    <span>No has iniciado sesión</span>
+  </div>
+</div>

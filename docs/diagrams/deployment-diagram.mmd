@@ -1,0 +1,55 @@
+flowchart LR
+  style CI fill:#eef2ff,stroke:#6366f1,stroke-width:1px
+  style Registry fill:#f0fff4,stroke:#059669,stroke-width:1px
+  style Infra fill:#fff7ed,stroke:#f97316,stroke-width:1px
+
+  subgraph CI_CD [GitHub Actions CI/CD]
+    GH_REPO[GitHub Repo: davi-acla-amp]
+    GH_WORKFLOW[.github/workflows/ci.yml]
+    GH_ACTIONS[Build & Test\nDocker Build\nPush to Registry\nDeploy]
+  end
+
+  subgraph Registry [Container Registry]
+    GHCR[GitHub Container Registry / Docker Hub]
+  end
+
+  subgraph Infra [Production Infrastructure]
+    LB[Load Balancer / Reverse Proxy\n(Nginx or Cloud LB)]
+    FE_CONTAINER[Frontend Container\nNGINX serving Angular]
+    BE_CONTAINER[Backend Container\nSpring Boot JAR in JVM]
+    DB[(Postgres / MariaDB)]
+    PV[Persistent Volume / Storage]
+    LOGS[Centralized Logs (ELK / Grafana)]
+  end
+
+  GH_REPO --> GH_WORKFLOW
+  GH_WORKFLOW --> GH_ACTIONS
+  GH_ACTIONS -->|push images| GHCR
+  GHCR -->|pull images| FE_CONTAINER
+  GHCR -->|pull images| BE_CONTAINER
+
+  FE_CONTAINER -->|static/HTTP| LB
+  LB -->|routes| BE_CONTAINER
+  BE_CONTAINER -->|connects| DB
+  DB --> PV
+  FE_CONTAINER --> LOGS
+  BE_CONTAINER --> LOGS
+
+  %% Deployment steps
+  subgraph DeploySteps[CI/CD Flow]
+    A[Push code to main branch]
+    B[Run unit tests & build]
+    C[Build Docker images]
+    D[Push images to registry]
+    E[Apply deployment (kubectl / docker-compose / ssh)]
+    F[Smoke tests]
+  end
+
+  GH_ACTIONS --> A
+  A --> B --> C --> D --> E --> F
+
+  %% Notes for this project
+  note right of GH_WORKFLOW: Example jobs:\n- build-backend\n- build-frontend\n- integration-tests\n- deploy-staging\n- deploy-prod
+
+  classDef small fill:#fff,stroke:#ccc,font-size:12px;
+  GH_WORKFLOW:::small

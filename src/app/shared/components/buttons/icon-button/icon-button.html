@@ -1,0 +1,3 @@
+<button [ngClass]="{'icon-red': color() == 'red', 'icon-grey': color() == 'grey' }" mat-icon-button (click)="onClick.emit()" [disabled]="disabled()" class="icon-button" [attr.aria-label]="ariaLabel">
+  <mat-icon>{{ icon }}</mat-icon>
+</button>

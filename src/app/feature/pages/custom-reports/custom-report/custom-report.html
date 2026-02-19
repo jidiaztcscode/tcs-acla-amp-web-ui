@@ -1,0 +1,230 @@
+<app-page-layout>
+
+    <div class="button-wrapper justify-left">
+        <app-title>Crear reportes personalizados</app-title>
+        <button mat-icon-button class="arrow-button" (click)="onToggle()">
+            <mat-icon>{{ (isShow() ? 'arrow_forward' : 'arrow_downward') }} </mat-icon>
+        </button>
+    </div>
+
+    <!-- Tabla -->
+    @if(isShow()) {
+        <div class="tabla-container">
+    
+            <div class="content-scrollable">
+                @if (data.length > 0) {
+    
+                <table class="tabla-redondeada">
+                    <thead>
+                        <tr cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
+    
+                            @for (col of displayedColumns; track $index) {
+                            <th cdkDrag class="encabezado">
+                                {{ col.text }}
+                            </th>
+                            }
+    
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (item of data; track $index) {
+                        <tr>
+                            @for (col of displayedColumns; track $index) {
+                            <td>
+                                {{ item[col.text] }}
+                            </td>
+                            }
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+    
+                }
+            </div>
+    
+        </div>
+    }
+
+    <div>
+        <mat-tab-group animationDuration="0ms" [(selectedIndex)]="selectedTab">
+            <mat-tab label="Grupo de datos">
+                <div class="button-wrapper">
+                    <mat-form-field class="davi-custom-mat-input-height" appearance="outline" style="width: 350px; margin: 0;">
+                        <mat-select [(ngModel)]="selectedVistaId" (selectionChange)="onVistaSelected($event.value)">
+                            @for (item of dataGroup; track $index) {
+                                <mat-option [value]="item.idvista"> Conjunto de datos {{ item.nomvista }}</mat-option>
+                            }
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div class="fields-table">
+                    <table class="tabla-redondeada" id="davi-table-fields">
+                        <thead>
+                            <tr>
+                                <th class="encabezado" style="width: 160px; min-width: 160px;">Campo</th>
+                                <th class="encabezado"></th>
+                                <th class="encabezado celda-centrada" style="min-width: 180px;">Nombre columna</th>
+                                <th class="encabezado celda-centrada">Sumar</th>
+                                <th class="encabezado celda-centrada">Relleno</th>
+                                <th class="encabezado">Longitud</th>
+                                <th class="encabezado">Justificacion</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    
+                            @for (field of groupDataList; track $index) {
+                            <tr>
+                                <td>{{ field.fieldKey }}</td>
+                                <td>
+                                    <mat-checkbox
+                                        id="davi-field-key-check-{{$index}}"
+                                        [(ngModel)]="field.isSelected"
+                                        (change)="onChangeCheck($event.checked, field)">
+                                    </mat-checkbox>
+                                </td>
+                                <td>
+                                    @if (field.isSelected) {
+                                        <mat-form-field appearance="outline" style="width: 180px;">
+                                            <input id="davi-input-fieldName-{{$index}}" matInput [(ngModel)]="field.fieldName">
+                                        </mat-form-field>
+                                    } @else {
+                                        {{ field.fieldName }}
+                                    }
+                                    
+                                </td>
+                                <td>
+                                    <mat-checkbox
+                                        [disabled]="!field.isSelected"
+                                        [checked]="field.fieldSum">
+                                    </mat-checkbox>
+                                <td>
+                                    @if (field.isSelected) {
+                                        <mat-form-field appearance="outline" style="width: 60px;">
+                                            <input matInput id="davi-input-fieldFill-{{$index}}" [(ngModel)]="field.fieldFill">
+                                        </mat-form-field>
+                                    } @else {
+                                        {{ field.fieldFill }}
+                                    }
+                                </td>
+                                <td>
+                                    @if (field.isSelected) {
+                                        <mat-form-field appearance="outline" style="width: 55px;">
+                                            <input matInput id="davi-input-fieldSize-{{$index}}" [(ngModel)]="field.fieldSize">
+                                        </mat-form-field>
+                                    } @else {
+                                        {{ field.fieldSize }}
+                                    }
+                                </td>
+                                <td>
+                                    <mat-icon class="justification-icon" matButton="elevated" matTooltip="Izquierda"  (click)="toggleTextJustification(field)" [style.color]="field.fieldAlign == 'left' ? '#000' : '#ccc'">format_align_left</mat-icon>
+                                    <mat-icon class="justification-icon" matButton="elevated" matTooltip="Derecha"  (click)="toggleTextJustification(field)" [style.color]="field.fieldAlign == 'right' ? '#000' : '#ccc'">format_align_right</mat-icon>
+                                </td>
+                            </tr>
+                            }
+    
+                        </tbody>
+                    </table>
+                </div>
+                <div class="button-wrapper content-center">
+                    <app-text-button (onClick)="changeTab(1)" [disabled]="displayedColumns.length < 1">Siguiente</app-text-button>
+                </div>
+            </mat-tab>
+            <mat-tab label="Filtros" [disabled]="displayedColumns.length < 1">
+                
+                @for(filter of filtersList; track $index) {
+                    <div class="form-row">
+                        @if ($index > 0) {
+                            <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 60px;">
+                                <mat-select [(ngModel)]="filter.connector">
+                                    @for (item of ['y', 'o']; track $index) {
+                                        <mat-option [value]="item"> {{ item }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+                        } @else {
+                            <div class="davi-custom-mat-input-height" style="width: 60px;"></div>
+                        }
+                        <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 200px;">
+                            <mat-select [(ngModel)]="filter.idDetvista">
+                                @for (item of displayedColumnsFilter; track $index) {
+                                    <mat-option [value]="item.idDetvista">{{ item.text }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 180px;">
+                            <mat-select [(ngModel)]="filter.conditional">
+                                @for (conditional of conditionalsList; track $index) {
+                                    <mat-option [value]="conditional.value">{{ conditional.name }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 180px;">
+                            <input matInput [(ngModel)]="filter.value" placeholder="Valor">
+                        </mat-form-field>
+                        @if ($index == filtersList.length - 1) {
+                            <app-icon-button action="add" [disabled]="filter.idDetvista == null || filter.conditional == ''" (onClick)="addFilter()"/>
+                        } @else {
+                            <app-icon-button color="grey" action="remove"/>
+                        }
+                    </div>
+                }
+
+                <div class="button-wrapper content-center">
+                    <app-text-button 
+                        [disabled]="displayedColumns.length < 1" 
+                        (onClick)="changeTab(2)">
+                        Siguiente
+                    </app-text-button>
+                </div>
+            </mat-tab>
+            <mat-tab label="Informacion de la consulta" [disabled]="displayedColumns.length < 1">
+                <div class="form-row">
+                    <div class="davi-custom-mat-input-height" style="width: 50%; display: grid;">
+                        <label>Categoria</label>
+                        <mat-form-field appearance="outline">
+                            <mat-select>
+                                @for (category of ['a', 'b']; track $index) {
+                                    <mat-option [value]="category">{{ category }}</mat-option>
+                                }
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+                    <div class="davi-custom-mat-input-height" style="width: 50%; display: grid;">
+                        <label>Nombre del reporte</label>
+                        <mat-form-field appearance="outline">
+                            <input id="davi-input-report-name" matInput [(ngModel)]="reportName">
+                        </mat-form-field>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div style="width: 46%; margin: 0 1rem; display: grid;">
+                        <label>Descripcion</label>
+                        <mat-form-field appearance="outline">
+                            <textarea matInput [(ngModel)]="reportDescription" style="height: 115px;"></textarea>
+                        </mat-form-field>
+                    </div>
+                    <div style="width: 30%; margin: 0 1rem; display: grid; padding: 2rem 0 1rem 0;">
+                        <div class="checkbox-with-label">
+                            <label>Mostrar titulo de las columnas</label>
+                            <mat-checkbox id="davi-show-column-title-check" [checked]="reportHeader === 'S'" (change)="reportHeader = $event.checked ? 'S' : 'N'">
+                            </mat-checkbox>
+                        </div>
+                        <div class="checkbox-with-label">
+                            <label>¿Contar registros?</label>
+                            <mat-checkbox id="davi-count-reg-check" [checked]="reportCount === 'S'" (change)="reportCount = $event.checked ? 'S' : 'N'">
+                            </mat-checkbox>
+                        </div>
+                        <div class="checkbox-with-label">
+                            <label>¿Agregar registro de control?</label>
+                            <mat-checkbox id="davi-add-control-check" [checked]="reportControl === 'S'" (change)="reportControl = $event.checked ? 'S' : 'N'">
+                            </mat-checkbox>
+                        </div>
+                    </div>
+                </div>
+                <div class="button-wrapper content-center">
+                    <app-text-button (onClick)="onSave()">Guardar</app-text-button>
+                </div>
+            </mat-tab>
+        </mat-tab-group>
+    </div>
+</app-page-layout>

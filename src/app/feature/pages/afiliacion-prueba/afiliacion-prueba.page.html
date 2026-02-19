@@ -1,0 +1,8 @@
+<h2>Página de Prueba de Afiliaciones</h2>
+<button (click)="cargarAfiliaciones()">Cargar Afiliaciones</button>
+<ul>
+  <li *ngFor="let afiliacion of afiliaciones">
+    {{ afiliacion.name }} ({{ afiliacion.email }})
+  </li>
+</ul>
+<div *ngIf="error" style="color:red">{{ error }}</div>

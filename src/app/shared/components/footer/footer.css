@@ -1,0 +1,17 @@
+.text-foot {
+    font-family: Roboto, "Helvetica Neue", sans-serif;;
+    text-align: right;
+    color: rgb(0, 0, 0);
+    font-weight: 40;
+    font-size: small;
+    
+}
+
+footer {
+  background-color: #c5c5c5;
+  padding: 4px;
+  text-align: right;
+  margin-top: auto !important; 
+}
+
+

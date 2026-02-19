@@ -1,0 +1,40 @@
+<div class="tabla-container">
+  <table class="tabla-redondeada">
+    <thead>
+      <tr>
+        <th class="encabezado">Nombre</th>
+        <th class="encabezado">Descripción</th>
+        <th class="encabezado celda-centrada">Modificar</th>
+        <th class="encabezado celda-centrada">Activar/Desactivar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let el of paginatedData">
+        <td>{{ el.nombre }}</td>
+        <td>{{ el.descripcion }}</td>
+        <td class="celda-centrada">
+          <app-edit-button (click)="onEditar(el)"></app-edit-button>
+        </td>
+        <td class="celda-centrada">
+          <app-switch [value]="el.activo" (valueChange)="onToggleChange(el, $event)"></app-switch>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="paginador">
+    <div class="info">
+      <!-- Mostrando {{ paginatedData.length }} de {{ totalItems }} registros -->
+    </div>
+
+    <div class="controles">
+      <button (click)="cambiarPagina(1)" [disabled]="currentPage === 1">«</button>
+      <button (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+      <span>{{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages">
+        ›
+      </button>
+      <button (click)="cambiarPagina(totalPages)" [disabled]="currentPage === totalPages">»</button>
+    </div>
+  </div>
+</div>

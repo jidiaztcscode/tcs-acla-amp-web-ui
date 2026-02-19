@@ -1,0 +1,29 @@
+<div class="container">
+  <div
+    class="list-box"
+    cdkDropList
+    id="opcionesDisponibles"
+    [cdkDropListData]="opcionesDisponibles"
+    [cdkDropListConnectedTo]="['opcionesSeleccionadas']"
+    (cdkDropListDropped)="drop($event)"
+  >
+    <h3>Opciones Disponibles</h3>
+    <div class="list-item" *ngFor="let opcion of opcionesDisponibles" cdkDrag>
+      {{ opcion }}
+    </div>
+  </div>
+
+  <div
+    class="list-box"
+    cdkDropList
+    id="opcionesSeleccionadas"
+    [cdkDropListData]="opcionesSeleccionadas"
+    [cdkDropListConnectedTo]="['opcionesDisponibles']"
+    (cdkDropListDropped)="drop($event)"
+  >
+    <h3>Opciones Seleccionadas</h3>
+    <div class="list-item" *ngFor="let opcion of opcionesSeleccionadas" cdkDrag>
+      {{ opcion }}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,133 @@
+<app-page-layout>
+    <div class="button-wrapper">
+        <app-title>Reintegros exitosos</app-title>
+        <!-- Tabla configuracion reporte -->
+        <table class="table-report-settings tabla-redondeada">
+            @for (item of reportSettings; track $index) {
+                <tr>
+                    <td style="width: auto; font-weight: bold; padding: 0 1rem;">
+                        {{ item.settingName }}
+                    </td>
+                    <td style="padding: 0 1rem;">
+                        {{ item.value }}
+                    </td>
+                </tr>
+            }
+        </table>
+    </div>
+    <!-- Tabla filtros -->
+    <div class="tabla-container">
+        <table class="table-filters tabla-redondeada">
+            <thead>
+                <tr>
+                    <th class="encabezado"></th>
+                    <th class="encabezado celda-centrada">Filtro</th>
+                    <th class="encabezado celda-centrada" style="width: 220px;">Operador</th>
+                    <th class="encabezado celda-centrada" style="width: 220px;">Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (filter of filterList; track $index) {
+                    <tr>
+                        <td>{{ filter.connector }}</td>
+                        <td>{{ filter.fieldKey }}</td>
+                        <td>{{ filter.conditional }}</td>
+                        <td>
+                            @switch (filter.type) {
+                                @case ('date') {
+                                    <mat-form-field appearance="outline" style="width: auto;" class="custom-date-picker">
+                                        <!-- Bind date to filterValues by key -->
+                                        <input matInput (focus)="picker.open()" [matDatepicker]="picker" id="davi-input-filter-{{$index}}" [(ngModel)]="filterValues[filter.fieldKey]" name="filter-{{$index}}">
+                                        <mat-hint>MM/DD/YYYY</mat-hint>
+                                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                                        <mat-datepicker #picker></mat-datepicker>
+                                    </mat-form-field>
+                                    }
+                                @case ('string') {
+                                    <mat-form-field appearance="outline" style="width: auto; padding: 0 4px !important;">
+                                        <input matInput [(ngModel)]="filterValues[filter.fieldKey]" name="filter-{{$index}}">
+                                    </mat-form-field>
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="button-wrapper select-format-container">
+       <div class="box-rounded">
+           <div class="icon-area">
+             <div class="format-icon icon-hover">
+                 <img src="assets/images/excel-icon.svg" alt="svg" height="50" width="50" (click)="onGenerateExcel()">
+             </div>
+              <div class="format-icon icon-hover">
+                  <img src="assets/images/csv-icon.svg" alt="svg" height="50" width="50" (click)="onGeneratecsv()">
+              </div>
+              <div class="format-icon icon-hover">
+                  <img src="assets/images/txt-icon.svg" alt="svg" height="50" width="50" (click)="onGeneratetxt()">
+              </div>
+           </div>
+       </div>
+       <div class="box-rounded">
+           <div class="format-icon icon-hover">
+               <img src="assets/images/pdf-icon.svg" alt="svg" height="50" width="50" (click)="onGeneratepdf()">
+           </div>
+           <div class="select-container">
+               <label>Tamaño papel:</label>
+               <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 100px;">
+                   <mat-select>
+                       @for (item of ['Carta', 'Oficio']; track $index) {
+                           <mat-option [value]="item"> {{ item }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="select-container">
+                <label>Orientación:</label>
+                <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 110px;">
+                    <mat-select>
+                        @for (item of ['Vertical', 'Horizontal']; track $index) {
+                            <mat-option [value]="item"> {{ item }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="select-container">
+                <label>Tamaño fuente:</label>
+                <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 100px;">
+                    <mat-select>
+                        @for (items of sizeNumbers; track $index) {
+                            <mat-option [value]="items"> {{ items }}</mat-option>
+                        }
+                    </mat-select>
+                </mat-form-field>
+            </div>
+       </div>
+    <app-text-button (click)="onGenerate()">Generar</app-text-button>
+    </div>
+    <div class="button-wrapper">
+        <h3 style="color: #8b8989;">Total registros encontrados: 4</h3>
+    </div>
+     <!-- Tabla registros -->
+    <div class="tabla-container">
+        <table class="tabla-redondeada">
+            <thead>
+                <tr>
+                    @for (col of columnsList; track $index) {
+                        <th class="encabezado">{{ col.text }}</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (item of resultsList; track $index) {
+                    <tr>
+                        @for (col of columnsList; track $index) {
+                            <td>{{ item[col.keyName] }}</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</app-page-layout>

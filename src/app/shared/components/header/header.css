@@ -1,0 +1,13 @@
+.app-header {
+    width: 100%;
+    height: auto;
+    background-color: #ffffff;
+    text-align: start;
+}
+
+.app-header img {
+    max-width: 80%;
+    height: 80px;
+    margin-top: -1%;
+    margin-left: 2.9rem;
+}

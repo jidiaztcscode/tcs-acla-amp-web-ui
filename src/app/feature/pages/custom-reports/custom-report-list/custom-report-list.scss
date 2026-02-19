@@ -1,0 +1,10 @@
+@use '_variables' as variables;
+
+.button-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  margin-bottom: 6px;
+  margin-top: 2rem;
+}

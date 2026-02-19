@@ -1,0 +1,67 @@
+flowchart TD
+  style Backend fill:#f0f7ff,stroke:#1f6feb,stroke-width:1px
+  style Frontend fill:#fff8e1,stroke:#f59e0b,stroke-width:1px
+  style DB fill:#e6ffed,stroke:#059669,stroke-width:1px
+
+  subgraph Frontend [davi-acla-amp-web-ui]
+    FE_ROOT[package.json\nangular.json]
+
+    subgraph FE_APP [src/app]
+      FE_FEATURE[feature/pages/custom-reports]
+      FE_DATA[data/datasources]
+      FE_SHARED[shared/components & services]
+      FE_DOMAIN[domain/models]
+    end
+
+    FE_DATA -->|uses| FE_DOMAIN
+    FE_FEATURE -->|consumes datasources| FE_DATA
+    FE_FEATURE -->|uses shared components| FE_SHARED
+  end
+
+  subgraph Backend [davi-acla-amp-mngr]
+    BE_ROOT[pom.xml\nmvnw]
+    subgraph BE_SRC [src/main/java/com/davivienda/pensionados]
+      CONTROLLERS[controller]
+      SERVICES[service / serviceImpl]
+      DTO[dto / mapper]
+      DOMAIN_MODEL[domain / model]
+      REPOSITORY[repository]
+    end
+
+    CONTROLLERS -->|call| SERVICES
+    SERVICES -->|use| REPOSITORY
+    SERVICES -->|map| DTO
+  end
+
+  subgraph Integracion [HTTP API]
+    API[HTTP REST\nhttp://localhost:8081/pensionados/api]
+  end
+
+  FE_DATA -->|HTTP requests| API
+  API -->|routes to| CONTROLLERS
+
+  subgraph DB [Database / Persistence]
+    PG[PostgreSQL or MariaDB]
+  end
+
+  REPOSITORY -->|SQL / JPA| PG
+
+  subgraph Certificado [certificado]
+    CERT_FILES[certificado/*]
+  end
+
+  %% Example key files and endpoints
+  FE_FEATURE ---|page| GenerateReport[generate-report.ts / generate-report.html]
+  FE_DATA ---|file| MesadasDS[mesadas.datasource.ts]
+  FE_DATA ---|file| ReportConfigDS[report-config.datasource.ts]
+  CONTROLLERS ---|file| MesadasController[MesadasController.java\nGET /api/mesadas/pagos]
+  CONTROLLERS ---|file| ReportConfigController[ReportConfigController.java\nGET /api/reportes/{id}]
+  CONTROLLERS ---|file| VistaController[VistaController.java\nGET /api/vistas/{id}]
+
+  classDef small fill:#fff,stroke:#ccc,font-size:12px;
+  GenerateReport:::small
+  MesadasDS:::small
+  ReportConfigDS:::small
+  MesadasController:::small
+  ReportConfigController:::small
+  VistaController:::small

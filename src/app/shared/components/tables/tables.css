@@ -1,0 +1,129 @@
+.tabla-container {
+  max-width: 900px;
+  margin: 0.5% auto;
+  padding: 0px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+}
+
+table.tabla-redondeada {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0.7px;
+  font-size: 12px;
+}
+
+.tabla-redondeada th {
+  background-color: #d50000;
+  color: white;
+  padding: 6px 8px;
+  text-align: center;
+  font-size: 12px;
+  border-radius: 6px;
+  height: 32px;
+}
+
+.tabla-redondeada td {
+  padding: 3px 8px;
+  background-color: white;
+  border-right: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 9px;
+  line-height: 1.1;
+}
+
+.tabla-redondeada tr {
+  height: 30px !important;
+}
+
+.tabla-redondeada th:last-child,
+.tabla-redondeada td:last-child {
+  border-right: none;
+}
+
+.tabla-redondeada tbody tr:nth-child(even) td {
+  background-color: #fafafa;
+}
+
+.tabla-redondeada tbody tr:hover td {
+  background-color: #f5f5f5;
+}
+
+.celda-centrada {
+  text-align: center;
+  vertical-align: middle;
+}
+
+app-edit-button,
+app-switch {
+  transform: scale(0.8);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.paginador {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 8px 16px;
+  font-size: 10px;
+  border-top: 1px solid #ddd;
+  gap: 8px;
+}
+
+.paginador .info {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.paginador .controles {
+  display: flex;
+  
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto; 
+  min-width: 530px; 
+}
+
+.paginador .controles button {
+  min-width: 30px;
+  padding: 6px 10px;
+  font-size: 10px;
+  background-color: #d50000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.paginador .controles button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.paginador .controles button:not(:disabled):hover {
+  background-color: #a80000;
+}
+
+/* Responsive para móviles */
+@media (max-width: 480px) {
+  .paginador {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .paginador .info {
+    margin-bottom: 8px;
+  }
+  .paginador .controles {
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+    min-width: auto;
+  }
+}

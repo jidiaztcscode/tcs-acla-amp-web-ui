@@ -1,0 +1,24 @@
+::ng-deep .mat-mdc-slide-toggle .mdc-switch__track {
+  background-color: #000000 !important;  
+  border-color: #000000 !important;      
+}
+ 
+::ng-deep .mat-mdc-slide-toggle .mdc-switch__handle {
+  background-color: #000000 !important;   
+  border-color: #020202 !important;      
+}
+ 
+::ng-deep .mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked .mdc-switch__track {
+  background-color: #ff0000 !important;
+  border-color: #ff0000 !important;     
+}
+ 
+::ng-deep .mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked .mdc-switch__handle {
+  background-color: #fff !important;    
+  border-color: #d80b0b !important;     
+}
+ 
+mat-slide-toggle {
+  margin-left: auto;
+  display: block;    
+  }

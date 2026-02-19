@@ -1,0 +1,94 @@
+@use '_variables' as variables;
+
+.button-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  height: auto;
+}
+
+.davi-custom-mat-input-height {
+  height: 24px; 
+  margin: 0 1rem;
+}
+
+::ng-deep .custom-date-picker .mat-mdc-form-field-flex {
+  height: 24px !important;
+  padding: 0 4px !important;
+}
+
+::ng-deep .custom-date-picker .mat-mdc-input-element {
+  text-align: center;
+}
+
+::ng-deep .custom-date-picker .mat-mdc-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+::ng-deep .custom-date-picker .mat-mdc-icon-button svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  color: variables.$red-davi;
+}
+// mat-datepicker-toggle-default-icon
+
+.box-rounded {
+  border-radius: 10px;
+  border: 2px solid variables.$red-davi;
+  width: auto;
+  padding: 10px;
+
+  flex-direction: row;
+  display: flex;
+}
+
+.select-container {
+  display: flex;
+  flex-direction: column;
+  label {
+    margin: 0 1rem;
+  }
+}
+
+.table-filters.tabla-redondeada td {
+  background-color: white;
+  border-bottom: 1px solid #ddd;
+  color: gray;
+}
+
+.table-report-settings.tabla-redondeada {
+  width: auto;
+  td, tr {
+    background-color: #fafafa;
+    border: 1px solid #ddd;
+  }
+}
+
+.select-format-container {
+  margin-bottom: 2rem; 
+  margin-top: 3rem;
+}
+
+.format-icon {
+  cursor: pointer;
+  width: 50px;
+  height: 50px;
+
+  transition: transform 0.2s ease, 
+    filter 0.2s ease;
+  will-change: transform;
+}
+
+.icon-hover:hover {
+  transform: scale(1.15);
+}
+
+.icon-area {
+  width: 200px;
+  display: flex;
+  justify-content: space-between;
+}

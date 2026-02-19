@@ -1,0 +1,10 @@
+- SYMPHONY_NAME_PROJECT: Nombre del proyecto
+- SYMPHONY_NAME_PROJECT_JIRA : Variable que contiene el identificador del proyecto para asociar los commits
+- SYMPHONY_AWS_REGION: AWS region.
+- SYMPHONY_BUCKET_DEV: AWS bucket dev.
+- SYMPHONY_BUCKET_LAB: AWS bucket lab.
+- SYMPHONY_BUCKET_PROD: AWS bucket prod.
+- SYMPHONY_NAME_APP: AWS name project.
+- SYMPHONY_DISTRIBUTION_ID_DEV: AWS distribution id en DEV
+- SYMPHONY_DISTRIBUTION_ID_LAB: AWS distribution id en LAB
+- SYMPHONY_DISTRIBUTION_ID_PROD: AWS distribution id en PROD

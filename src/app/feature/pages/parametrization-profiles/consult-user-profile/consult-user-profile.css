@@ -1,0 +1,36 @@
+.button-wrapper {
+  position: relative; 
+  height: 50px; 
+  margin-bottom: 16px;
+}
+
+.btn-descargar {
+  position: absolute;
+  top: 0;
+  right: 300px; 
+}
+
+.btn-agregar {
+  position: absolute;
+  top: 0;
+  right: 350px;
+}
+
+.btn-descargar, .btn-agregar {
+  transform: scale(1.2); 
+  transform-origin: center center;
+}
+
+footer {
+  height: 8vh;
+}
+
+body {
+  height: 88vh;
+}
+
+* {
+  background-color: #fff;
+}
+
+

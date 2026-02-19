@@ -1,0 +1,7 @@
+@use '_variables' as variables;
+
+.principal-title {
+    color: variables.$red-davi;
+    margin-top: 18px;
+    font-size:larger;
+}

@@ -1,0 +1,39 @@
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 20px;
+}
+
+.list-box {
+  width: 250px;
+  min-height: 300px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+}
+
+.list-box h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.list-item {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+}
+
+.list-item.cdk-drag-preview {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+
+.list-item.cdk-drag-placeholder {
+  opacity: 0;
+}

@@ -1,0 +1,22 @@
+/* button {
+    margin-left: 900px;
+} */
+ 
+.mat-icon {
+    color: red;
+}
+
+.add-icon-button {
+  border: 2px solid red;         
+  border-radius: 50%;            
+  padding: 8px;
+  box-sizing: border-box;        
+  background-color: transparent; 
+  color: red;                    
+}
+
+.add-icon-button mat-icon {
+  font-size: 20px; 
+}
+
+

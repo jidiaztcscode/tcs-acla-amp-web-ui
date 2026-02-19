@@ -1,0 +1,134 @@
+@use '_variables' as variables;
+
+.button-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  margin-bottom: 6px;
+  margin-top: 1rem;
+}
+
+.tabla-container {
+  padding: 2rem 0px;
+
+  display: flex;
+  justify-content: space-around;
+  background-color: #e3e1e1;
+  overflow-x: auto;
+}
+
+table.tabla-redondeada {
+  width: auto;
+  th {
+    white-space: nowrap;
+    cursor: grab;
+  }
+}
+
+.cdk-drag-preview {
+  background: #e53935;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  padding: 8px 16px;
+  font-weight: bold;
+  opacity: 0.95;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+  border: 2px dashed #e53935;
+  height: 14px !important;
+}
+
+.content-scrollable {
+  height: auto;
+  min-height: 131px;
+}
+
+.align-selected {
+  color: #000;
+}
+
+.align-no-selected {
+  color: #000;
+}
+
+.justification-icon {
+  margin: 0 7px;
+  cursor: pointer;
+}
+
+::ng-deep .mat-mdc-form-field-flex input {
+  caret-color: #000 !important;
+}
+
+// custom clases
+
+.form-row {
+  display: flex;
+  align-items: center;
+  height: auto;
+  margin: 1rem 0;
+  padding: 0 3rem;
+}
+
+.checkbox-with-label {
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+}
+
+.davi-custom-mat-input-height {
+  height: 24px; 
+  margin: 0 1rem;
+}
+
+.content-center {
+  justify-content: center;
+}
+
+
+//
+
+.fields-table {
+  max-height: 270px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: block;
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0.7px;
+  }
+
+  input {
+    text-align: center;
+  }
+}
+
+#davi-table-fields {
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: variables.$red-davi;
+    color: white;
+  }
+}
+
+// Arrow button
+
+.arrow-button {
+  padding: 8px;
+  box-sizing: border-box;
+  background-color: transparent;
+  color: variables.$red-davi !important;
+  font-size: 20px;
+}
+
+.justify-left {
+  justify-content: left;
+}

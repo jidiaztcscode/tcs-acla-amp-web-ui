@@ -1,0 +1,60 @@
+<app-page-layout>
+    <app-title>Reportes personalizados</app-title>
+
+    <div class="button-wrapper">
+        <h3 style="color: #8b8989;">Total registros encontrados: {{ totalItems }}</h3>
+        <app-icon-button matButton="elevated" matTooltip="Nuevo reporte" action="add" (onClick)="onAdd()"/>
+        <!-- <app-add-button class="btn-agregar" (click)="onAdd()"></app-add-button> -->
+    </div>
+
+    <!-- Tabla -->
+
+    <div class="tabla-container">
+        <table class="tabla-redondeada">
+            <thead>
+                <tr>
+                    <th class="encabezado">Categoría</th>
+                    <th class="encabezado">Nombre consulta</th>
+                    <th class="encabezado celda-centrada">Descripción</th>
+                    <th class="encabezado celda-centrada">Usuario</th>
+                    <th class="encabezado celda-centrada">Fecha creación</th>
+                    <th class="encabezado" style="width: 117px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @for (report of reportList; track $index) {
+                    <tr>
+                        <td>{{ report.category }}</td>
+                        <td>{{ report.name }}</td>
+                        <td>{{ report.description }}</td>
+                        <td>{{ report.user }}</td>
+                        <td>{{ report.dateCreated | date: "yyyy-MM-dd hh:mm:ss" }}</td>
+                        <td class="celda-centrada" style="display: flex;justify-content: center;">
+                            <app-icon-button matButton="elevated" matTooltip="Editar reporte" action="edit" (onClick)="onEdit(report)"/>
+                            <app-icon-button matButton="elevated" matTooltip="Generar reporte" action="download" (onClick)="onGenerate(report)"/>
+                            <app-icon-button matButton="elevated" matTooltip="Eliminar reporte" action="delete" (onClick)="onDelete(report)"/>
+                        </td>
+                    </tr>
+                }
+                
+            </tbody>
+        </table>
+
+        <div class="paginador">
+            <div class="info">
+                <!-- Mostrando {{ paginatedData.length }} de {{ totalItems }} registros -->
+            </div>
+
+            <div class="controles">
+                <button (click)="cambiarPagina(1)" [disabled]="currentPage === 1">«</button>
+                <button (click)="cambiarPagina(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+                <span>{{ currentPage }} de {{ totalPages }}</span>
+                <button (click)="cambiarPagina(currentPage + 1)" [disabled]="currentPage === totalPages">
+                    ›
+                </button>
+                <button (click)="cambiarPagina(totalPages)" [disabled]="currentPage === totalPages">»</button>
+            </div>
+        </div>
+    </div>
+</app-page-layout>

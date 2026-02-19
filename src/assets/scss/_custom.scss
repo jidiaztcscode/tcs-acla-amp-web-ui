@@ -1,0 +1,203 @@
+@use '_variables' as variables;
+
+
+// Tabla
+
+.tabla-container {
+  max-width: 100%;
+  margin: 0.5% auto;
+  padding: 0px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+  font-size: 12px;
+}
+
+table.tabla-redondeada {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0.7px;
+  font-size: 12px;
+}
+
+.tabla-redondeada th {
+  background-color: variables.$red-davi;
+  color: white;
+  padding: 4px 25px;
+  text-align: center;
+  font-size: 12px;
+  border-radius: 6px;
+  height: 32px;
+}
+
+.tabla-redondeada td {
+  padding: 3px 8px;
+  background-color: white;
+  border-right: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.tabla-redondeada tr {
+  height: 30px !important;
+}
+
+.tabla-redondeada th:last-child,
+.tabla-redondeada td:last-child {
+  border-right: none;
+}
+
+.tabla-redondeada tbody tr:nth-child(even) td {
+  background-color: #fafafa;
+}
+
+.tabla-redondeada tbody tr:hover td {
+  background-color: #f5f5f5;
+}
+
+.celda-centrada {
+  text-align: center;
+  vertical-align: middle;
+}
+
+// Paginador
+
+
+.paginador {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 8px 16px;
+  font-size: 10px;
+  border-top: 1px solid #ddd;
+  gap: 8px;
+}
+
+.paginador .info {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.paginador .controles {
+  display: flex;
+  
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto; 
+  min-width: 530px; 
+}
+
+.paginador .controles button {
+  min-width: 30px;
+  padding: 6px 10px;
+  font-size: 10px;
+  background-color: variables.$red-davi;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.paginador .controles button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.paginador .controles button:not(:disabled):hover {
+  background-color: variables.$red-davi;
+}
+
+/* Responsive para móviles */
+@media (max-width: 480px) {
+  .paginador {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .paginador .info {
+    margin-bottom: 8px;
+  }
+  .paginador .controles {
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+    min-width: auto;
+  }
+}
+
+// Checkbox
+
+.mdc-checkbox__checkmark {
+  color: variables.$red-davi !important;
+}
+
+.mdc-checkbox__background {
+  background: white !important;
+  border-color: variables.$red-davi !important;
+}
+
+.mat-mdc-checkbox.mat-mdc-checkbox-disabled 
+.mdc-checkbox__background {
+  opacity: 0.5;
+}
+
+// mat-input-customizations
+
+.mdc-text-field--outlined .mat-mdc-form-field-infix {
+//   height: 1rem !important;
+  min-height: 1rem;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 13px;
+}
+
+.mat-mdc-select-value {
+  font-size: 13px;
+}
+
+.mat-mdc-form-field-bottom-align {
+  display: none !important;
+}
+
+// .mat-mdc-form-field-outline {
+//   border-color: variables.$red-davi !important;
+// }
+
+.mdc-text-field--focused .mdc-notched-outline__notch,
+.mdc-text-field--focused .mdc-notched-outline__leading,
+.mdc-text-field--focused .mdc-notched-outline__trailing {
+  border-color: variables.$red-davi !important;
+}
+
+// Calendar
+
+.mat-calendar-body-selected {
+  background-color: variables.$red-davi !important;
+  border-color: variables.$red-davi !important;
+}
+
+.mat-calendar-body-today:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+  border-color: variables.$red-davi !important;
+}
+
+.mat-calendar-body-selected.mat-calendar-body-today {
+  box-shadow: inset 0 0 0 1px variables.$red-davi !important;
+}
+
+// Select
+.mat-mdc-select-arrow svg {
+  fill: variables.$red-davi;
+}
+
+.button-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 40px;
+  margin-bottom: 6px;
+  margin-top: 2rem;
+}

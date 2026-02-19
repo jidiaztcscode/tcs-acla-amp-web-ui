@@ -1,0 +1,34 @@
+<div class="sidebar-wrapper" [class.active]="isSidebarOpen" (click)="isSidebarOpen = false">
+  <nav class="sidebar" (click)="$event.stopPropagation()">
+    <button class="toggle-button" (click)="toggleSidebar()">
+      <img src="assets/images/hamburger-icon.png" alt="Menú" />
+    </button>
+
+    <div class="profile" *ngIf="isSidebarOpen">
+      <img src="assets/images/perfil.png" alt="Perfil" class="profile-img" />
+      <h3>{{ userDisplayName }}</h3>
+      <p>{{ userRoleDisplay }}</p>
+    </div>
+
+    <ul class="menu">
+      <li class="menu-item" *ngFor="let item of menuItems" [class.has-children]="item.children"
+        (click)="item.children ? toggleSubmenu(item.label) : null">
+        <div class="menu-header">
+          <img [src]="item.icon" class="menu-icon" alt="Icono" />
+          <span class="menu-label" *ngIf="isSidebarOpen">{{ item.label }}</span>
+          <img *ngIf="item.children && isSidebarOpen" [src]="expandedMenu === item.label
+          ? 'assets/images/botontype2.png'
+          : 'assets/images/botontype1.png'" alt="Desplegar" class="submenu-toggle-icon" />
+        </div>
+
+        <ul class="submenu-lateral" *ngIf="item.children && expandedMenu === item.label">
+
+          <li class="submenu-item" *ngFor="let child of item.children">
+            {{ child.name }}
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </nav>
+  <div class="overlay" *ngIf="isSidebarOpen"></div>
+</div>

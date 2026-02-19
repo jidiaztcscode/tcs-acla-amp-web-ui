@@ -1,0 +1,39 @@
+<div class="main-container">
+  <app-title [text]="'GESTION'"></app-title>
+  <div class="cus-input-container">
+    <mat-label>Nombre del perfil</mat-label>
+    <mat-form-field appearance="outline" class="custom-input">
+      <input matInput placeholder="Escribe algo" />
+    </mat-form-field>
+  </div>
+
+  <div class="container">
+    <div
+      class="list-box"
+      cdkDropList
+      id="avaliableOptions"
+      [cdkDropListData]="avaliableOptions"
+      [cdkDropListConnectedTo]="['selectedOptions']"
+      (cdkDropListDropped)="drop($event)"
+    >
+      <h3>Opciones Disponibles</h3>
+      <div class="list-item" *ngFor="let opcion of avaliableOptions" cdkDrag>
+        {{ opcion.profileOptionName }}
+      </div>
+    </div>
+
+    <div
+      class="list-box"
+      cdkDropList
+      id="selectedOptions"
+      [cdkDropListData]="selectedOptions"
+      [cdkDropListConnectedTo]="['avaliableOptions']"
+      (cdkDropListDropped)="drop($event)"
+    >
+      <h3>Opciones Seleccionadas</h3>
+      <div class="list-item" *ngFor="let opcion of selectedOptions" cdkDrag>
+        {{ opcion.profileOptionName }}
+      </div>
+    </div>
+  </div>
+</div>

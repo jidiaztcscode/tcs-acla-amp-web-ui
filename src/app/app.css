@@ -1,0 +1,31 @@
+
+html, body, .layout-container {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.layout-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+app-header {
+    flex: 0 0 auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.content-area {
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+app-footer {
+    flex: 0 0 auto;
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+}

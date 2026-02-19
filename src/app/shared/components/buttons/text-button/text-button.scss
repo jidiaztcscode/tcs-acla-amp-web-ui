@@ -1,0 +1,10 @@
+@use '_variables' as variables;
+
+.davi-text-button:not([disabled])  {
+    background-color: variables.$red-davi !important;
+    color: white;
+}
+
+.davi-text-button:not([disabled]):hover {
+  background-color: #D50000;
+}
