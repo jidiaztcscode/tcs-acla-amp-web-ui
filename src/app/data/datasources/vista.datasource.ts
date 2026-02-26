@@ -9,7 +9,7 @@ export interface MesadasReportType {
   nomvista: string;
   descvista: string;
   endpoint: string;
-  modelType: 'pago' | 'rechazo' | 'certificado';
+  modelType: 'pago' | 'rechazo' | 'certificado' | 'apertura' | 'inactiva';
 }
 
 export const MESADAS_REPORT_TYPES: MesadasReportType[] = [
@@ -33,6 +33,21 @@ export const MESADAS_REPORT_TYPES: MesadasReportType[] = [
     descvista: 'Reporte de certificados de mesadas',
     endpoint: 'certificados',
     modelType: 'certificado'
+  }
+  ,
+  {
+    idvista: 4,
+    nomvista: 'Aperturas',
+    descvista: 'Reporte de aperturas de cuentas',
+    endpoint: 'aperturas',
+    modelType: 'apertura'
+  },
+  {
+    idvista: 5,
+    nomvista: 'Inactivas',
+    descvista: 'Reporte de cuentas inactivas',
+    endpoint: 'inactivas',
+    modelType: 'inactiva'
   }
 ];
 
@@ -96,6 +111,44 @@ function getCertificadoColumns(): VistaColumna[] {
     { idDetvista: 315, idvista: 3, nomcolunna: 'fechaPago', tipoDato: 'date', longitud: 10, estado: 'A', pertenecevista: 'S' },
     { idDetvista: 316, idvista: 3, nomcolunna: 'descripcionCausalNoPago', tipoDato: 'string', longitud: 200, estado: 'A', pertenecevista: 'S' },
     { idDetvista: 317, idvista: 3, nomcolunna: 'causalNoPago', tipoDato: 'string', longitud: 50, estado: 'A', pertenecevista: 'S' }
+  ];
+}
+
+function getAperturaColumns(): VistaColumna[] {
+  return [
+    { idDetvista: 401, idvista: 4, nomcolunna: 'idAfiliacion', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 402, idvista: 4, nomcolunna: 'numeroIdPensionado', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 403, idvista: 4, nomcolunna: 'desTipoIdentificacion', tipoDato: 'string', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 404, idvista: 4, nomcolunna: 'nombrePensionado', tipoDato: 'string', longitud: 100, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 405, idvista: 4, nomcolunna: 'oficinaApertura', tipoDato: 'string', longitud: 50, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 406, idvista: 4, nomcolunna: 'numeroCuentaPensionado', tipoDato: 'string', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 407, idvista: 4, nomcolunna: 'estadoCuenta', tipoDato: 'string', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 408, idvista: 4, nomcolunna: 'fechaAperturaCuenta', tipoDato: 'date', longitud: 10, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 409, idvista: 4, nomcolunna: 'desMedioTransacional', tipoDato: 'string', longitud: 50, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 410, idvista: 4, nomcolunna: 'desObjetivoCuenta', tipoDato: 'string', longitud: 50, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 411, idvista: 4, nomcolunna: 'cuentaEmpleador', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 412, idvista: 4, nomcolunna: 'numeroIdEmpresa', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 413, idvista: 4, nomcolunna: 'nombreEmpresa', tipoDato: 'string', longitud: 100, estado: 'A', pertenecevista: 'S' }
+  ];
+}
+
+function getInactivaColumns(): VistaColumna[] {
+  return [
+    { idDetvista: 501, idvista: 5, nomcolunna: 'idAfiliacion', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 502, idvista: 5, nomcolunna: 'nombrePensionado', tipoDato: 'string', longitud: 100, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 503, idvista: 5, nomcolunna: 'numeroIdPensionado', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 504, idvista: 5, nomcolunna: 'desTipoIdentificacion', tipoDato: 'string', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 505, idvista: 5, nomcolunna: 'numeroCuentaPensionado', tipoDato: 'string', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 506, idvista: 5, nomcolunna: 'fechaAperturaCuenta', tipoDato: 'date', longitud: 10, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 507, idvista: 5, nomcolunna: 'fechaUltimoRetiro', tipoDato: 'date', longitud: 10, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 508, idvista: 5, nomcolunna: 'fechaUltimoAbono', tipoDato: 'date', longitud: 10, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 509, idvista: 5, nomcolunna: 'desObjetivoCuenta', tipoDato: 'string', longitud: 50, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 510, idvista: 5, nomcolunna: 'desMedioTransacional', tipoDato: 'string', longitud: 50, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 511, idvista: 5, nomcolunna: 'cuentaEmpleador', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 512, idvista: 5, nomcolunna: 'nombreEmpresa', tipoDato: 'string', longitud: 100, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 513, idvista: 5, nomcolunna: 'numeroIdEmpresa', tipoDato: 'number', longitud: 20, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 514, idvista: 5, nomcolunna: 'valorTotalMesadas', tipoDato: 'number', longitud: 18, estado: 'A', pertenecevista: 'S' },
+    { idDetvista: 515, idvista: 5, nomcolunna: 'fechaInactividad', tipoDato: 'date', longitud: 10, estado: 'A', pertenecevista: 'S' }
   ];
 }
 
@@ -182,6 +235,12 @@ export class VistaDatasource implements IVistaDatasource {
           break;
         case 'certificado':
           columns = getCertificadoColumns();
+          break;
+        case 'apertura':
+          columns = getAperturaColumns();
+          break;
+        case 'inactiva':
+          columns = getInactivaColumns();
           break;
         default:
           return left(new Error(`Tipo de modelo no reconocido: ${reportType.modelType}`));

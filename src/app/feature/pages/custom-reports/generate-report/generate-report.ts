@@ -1,6 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { MesadasDatasource } from '../../../../data/datasources/mesadas.datasource';
+import { CuentasDatasource } from '../../../../data/datasources/cuentas.datasource';
 import { ReportConfigDatasource } from '../../../../data/datasources/report-config.datasource';
 import { VistaDatasource } from '../../../../data/datasources/vista.datasource';
 import { ReportConfig, Vista } from '../../../../domain/models/report-config.model';
@@ -21,6 +22,7 @@ export class GenerateReport implements OnInit {
   private readonly reportConfigDatasource = inject(ReportConfigDatasource);
   private readonly vistaDatasource = inject(VistaDatasource);
   private readonly documentExport = inject(DocumentExport);
+  private readonly cuentasDatasource = inject(CuentasDatasource);
 
   reportId?: number;
   reportConfig?: ReportConfig;
@@ -139,7 +141,9 @@ export class GenerateReport implements OnInit {
     const endpointMap: { [key: number]: string } = {
       1: 'pagos',
       2: 'rechazos',
-      3: 'certificados'
+      3: 'certificados',
+      4: 'aperturas',
+      5: 'inactivas'
     };
 
     const endpoint = endpointMap[this.vista.idvista];
@@ -205,6 +209,32 @@ export class GenerateReport implements OnInit {
           this.totalRecords = result.right.length;
           this.totalPages = 1;
           console.log('Certificados loaded:', this.resultsList);
+        } else {
+          this.errorMessage = result.left.message;
+          alert('Error al generar reporte: ' + result.left.message);
+        }
+      } else if (endpoint === 'aperturas') {
+        const result = await this.cuentasDatasource.consultarAperturas(queryParams);
+        if (isRight(result)) {
+          this.resultsList = result.right.items;
+          this.totalRecords = result.right.totalRecords;
+          this.totalPages = result.right.totalPages;
+          this.currentPage = result.right.page;
+          this.pageSize = result.right.pageSize;
+          console.log('Aperturas loaded:', this.resultsList);
+        } else {
+          this.errorMessage = result.left.message;
+          alert('Error al generar reporte: ' + result.left.message);
+        }
+      } else if (endpoint === 'inactivas') {
+        const result = await this.cuentasDatasource.consultarInactivas(queryParams);
+        if (isRight(result)) {
+          this.resultsList = result.right.items;
+          this.totalRecords = result.right.totalRecords;
+          this.totalPages = result.right.totalPages;
+          this.currentPage = result.right.page;
+          this.pageSize = result.right.pageSize;
+          console.log('Inactivas loaded:', this.resultsList);
         } else {
           this.errorMessage = result.left.message;
           alert('Error al generar reporte: ' + result.left.message);

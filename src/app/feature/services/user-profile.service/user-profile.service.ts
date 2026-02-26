@@ -1,30 +1,62 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { ProfileService, Profile, PaginatedResponse } from '../profile.service';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserProfileService {
 
-  private perfiles = [
-    { nombre: 'GG-Rol AMP_Prod_Admin', descripcion: 'Perfil de administración', activo: true },
-    { nombre: 'GG-Rol AMP_Prod_Analista', descripcion: 'Perfil de analista', activo: true },
-    { nombre: 'GG-Rol AMP_Prod_Reintegros', descripcion: 'Perfil de reintegros', activo: true },
-    { nombre: 'GG-Rol AMP_Prod_Autorización', descripcion: 'Perfil de Autorizaciones', activo: true },
-    { nombre: 'GG-Rol AMP_Prod_GestionPerfiles', descripcion: 'Perfil de Perfiles', activo: true },
-    { nombre: 'GG-Rol AMP_Prod_GestionPerfiles', descripcion: 'Perfil de Prueba', activo: true },
-    { nombre: 'GG-Rol AMP_Prod_GestionPerfiles', descripcion: 'Perfil de Prueba2', activo: true },
-
-  ];
+  private profileService = inject(ProfileService);
 
   constructor() {}
 
-  getPerfiles(page: number, pageSize: number) {
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-    const pagedData = this.perfiles.slice(start, end);
-    return {
-      data: pagedData,
-      total: this.perfiles.length
-    };
+  /**
+   * Obtiene perfiles con paginación desde el backend
+   */
+  getPerfiles(page: number, pageSize: number): Observable<PaginatedResponse<Profile>> {
+    return this.profileService.getProfilesPaginated(page, pageSize);
+  }
+
+  /**
+   * Obtiene todos los perfiles sin paginación
+   */
+  getAllPerfiles(): Observable<Profile[]> {
+    return this.profileService.getAllProfiles();
+  }
+
+  /**
+   * Obtiene un perfil específico por ID
+   */
+  getPerfilById(id: number): Observable<Profile> {
+    return this.profileService.getProfileById(id);
+  }
+
+  /**
+   * Crea un nuevo perfil
+   */
+  createPerfil(perfil: Profile): Observable<Profile> {
+    return this.profileService.createProfile(perfil);
+  }
+
+  /**
+   * Actualiza un perfil existente
+   */
+  updatePerfil(id: number, perfil: Profile): Observable<Profile> {
+    return this.profileService.updateProfile(id, perfil);
+  }
+
+  /**
+   * Activa o desactiva un perfil
+   */
+  setActivePerfil(id: number, active: boolean): Observable<void> {
+    return this.profileService.setActive(id, active);
+  }
+
+  /**
+   * Exporta los perfiles a Excel
+   */
+  exportPerfiles(): Observable<Blob> {
+    return this.profileService.exportProfiles();
   }
 }
