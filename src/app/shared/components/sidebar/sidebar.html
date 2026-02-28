@@ -22,8 +22,7 @@
         </div>
 
         <ul class="submenu-lateral" *ngIf="item.children && expandedMenu === item.label">
-
-          <li class="submenu-item" *ngFor="let child of item.children">
+          <li class="submenu-item" *ngFor="let child of item.children" (click)="navigateTo(child.route)">
             {{ child.name }}
           </li>
         </ul>

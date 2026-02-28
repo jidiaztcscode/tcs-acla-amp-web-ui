@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { User, UserRole } from '../../models/user.model';
 import { Subscription } from 'rxjs';
@@ -7,7 +8,7 @@ import { Subscription } from 'rxjs';
 interface MenuItem {
   icon: string;
   label: string;
-  children?: { name: string }[];
+  children?: { name: string; route?: string }[];
 }
 
 @Component({
@@ -18,7 +19,7 @@ interface MenuItem {
   styleUrls: ['./sidebar.css']
 })
 export class Sidebar implements OnInit, OnDestroy {
-  isSidebarOpen = false;
+  isSidebarOpen = true;
   expandedMenu: string | null = null;
   currentUser: User | null = null;
   filteredMenuItems: MenuItem[] = [];
@@ -38,10 +39,16 @@ export class Sidebar implements OnInit, OnDestroy {
     { icon: 'assets/images/reportes-icon.png', label: 'Reportes' },
     { icon: 'assets/images/lupa-icon.png', label: 'Consultar Logs' },
     { icon: 'assets/images/pds-icon.png', label: 'Parametrizacion Del Sistema' },
-    { icon: 'assets/images/adp-icon.png', label: 'Administracion De Perfiles' },
+    {
+      icon: 'assets/images/adp-icon.png',
+      label: 'Administracion De Perfiles',
+      children: [
+        { name: 'Consultar perfil de usuarios', route: '/' }
+      ]
+    },
   ];
 
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit() {
     // Suscribirse a cambios en el usuario
@@ -70,7 +77,14 @@ export class Sidebar implements OnInit, OnDestroy {
    */
   private filterMenuItems() {
     if (!this.currentUser) {
-      this.filteredMenuItems = [];
+      // Mostrar todos los menús cuando no hay usuario (para desarrollo/pruebas)
+      this.filteredMenuItems = this.allMenuItems;
+      return;
+    }
+
+    // Si el usuario no tiene permisos definidos, mostrar todos los menús
+    if (!this.currentUser.permissions || this.currentUser.permissions.length === 0) {
+      this.filteredMenuItems = this.allMenuItems;
       return;
     }
 
@@ -108,6 +122,15 @@ export class Sidebar implements OnInit, OnDestroy {
 
   setAnalistaRole() {
     this.authService.setUserRole(UserRole.ANALISTA).subscribe();
+  }
+
+  /**
+   * Navega a la ruta especificada si existe
+   */
+  navigateTo(route?: string) {
+    if (route) {
+      this.router.navigate([route]);
+    }
   }
 }
 
