@@ -66,6 +66,9 @@ export class Sidebar implements OnInit, OnDestroy {
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;
+    if (!this.isSidebarOpen) {
+      this.expandedMenu = null; // Cerrar submenu cuando se colapsa el sidebar
+    }
   }
 
   toggleSubmenu(label: string) {
@@ -130,6 +133,7 @@ export class Sidebar implements OnInit, OnDestroy {
   navigateTo(route?: string) {
     if (route) {
       this.router.navigate([route]);
+      this.expandedMenu = null; // Cerrar el submenu después de navegar
     }
   }
 }

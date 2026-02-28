@@ -21,7 +21,7 @@
           : 'assets/images/botontype1.png'" alt="Desplegar" class="submenu-toggle-icon" />
         </div>
 
-        <ul class="submenu-lateral" *ngIf="item.children && expandedMenu === item.label">
+        <ul class="submenu-lateral" *ngIf="isSidebarOpen && item.children && expandedMenu === item.label">
           <li class="submenu-item" *ngFor="let child of item.children" (click)="navigateTo(child.route)">
             {{ child.name }}
           </li>
