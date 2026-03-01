@@ -43,7 +43,7 @@ export class Sidebar implements OnInit, OnDestroy {
       icon: 'assets/images/adp-icon.png',
       label: 'Administracion De Perfiles',
       children: [
-        { name: 'Consultar perfil de usuarios', route: '/' }
+        { name: 'Consultar perfil de usuarios', route: '/consultar-perfiles' }
       ]
     },
   ];

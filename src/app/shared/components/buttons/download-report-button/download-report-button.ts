@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-download-report-button',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './download-report-button.html',
   styleUrls: ['./download-report-button.css']
 })

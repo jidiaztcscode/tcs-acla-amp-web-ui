@@ -2,6 +2,12 @@
 
 .principal-title {
     color: variables.$red-davi;
-    margin-top: 18px;
-    font-size:larger;
+    margin-top: 0;
+    margin-bottom: 0;
+    font-size: 24px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: visible;
+    width: auto;
+    display: block;
 }

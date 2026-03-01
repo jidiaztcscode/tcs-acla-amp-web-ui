@@ -1,11 +1,10 @@
 import { Component, input, output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-add-button',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [CommonModule],
   templateUrl: './add-button.html',
   styleUrls: ['./add-button.css']
 })

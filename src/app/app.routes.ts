@@ -6,7 +6,8 @@ import { AuthLoginComponent } from './feature/pages/auth-login/auth-login.compon
 import { AuthTestComponent } from './feature/pages/auth-test/auth-test.component';
 
 export const routes: Routes = [
-  { path: '', component: ConsultUserProfile },
+  { path: '', redirectTo: '/consultar-perfiles', pathMatch: 'full' },
+  { path: 'consultar-perfiles', component: ConsultUserProfile },
   { path: 'management', component: ProfilesManagement, canActivate: [MsalGuard] },
   { path: 'login', component: AuthLoginComponent },
   { path: 'auth-test', component: AuthTestComponent },

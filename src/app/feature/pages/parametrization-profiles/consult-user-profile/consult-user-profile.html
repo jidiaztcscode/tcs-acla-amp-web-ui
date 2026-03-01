@@ -1,13 +1,16 @@
 <div class="page-layout">
   <div class="page-content">
-    <app-title></app-title>
+    <!-- Header con título y botones -->
+    <div class="header-container">
+      <app-title>Consultar perfil de usuarios</app-title>
 
-    <div class="button-wrapper">
-      <app-download-report-button
-        class="btn-descargar"
-        (click)="onDescargar()"
-      ></app-download-report-button>
-      <app-add-button class="btn-agregar" (click)="onAgregar()"></app-add-button>
+      <div class="button-wrapper">
+        <app-add-button class="btn-agregar" (click)="onAgregar()"></app-add-button>
+        <app-download-report-button
+          class="btn-descargar"
+          (click)="onDescargar()"
+        ></app-download-report-button>
+      </div>
     </div>
 
     <app-tables [data]="data"></app-tables>
