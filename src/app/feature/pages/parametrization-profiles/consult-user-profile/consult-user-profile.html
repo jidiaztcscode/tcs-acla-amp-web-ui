@@ -13,6 +13,10 @@
       </div>
     </div>
 
+    <!-- Mensaje de error si existe -->
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+
+    <!-- Tabla con datos -->
     <app-tables [data]="data"></app-tables>
   </div>
 </div>

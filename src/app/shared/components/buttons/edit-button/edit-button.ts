@@ -9,5 +9,4 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./edit-button.css']
 })
 export class EditButton {
-
 }

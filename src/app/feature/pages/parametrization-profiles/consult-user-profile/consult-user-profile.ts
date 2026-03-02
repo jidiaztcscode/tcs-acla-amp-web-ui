@@ -1,13 +1,13 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
 import { Tables } from '../../../../shared/components/tables/tables';
 
 import { Title } from '../../../../shared/components/title/title';
 import { DownloadReportButton } from '../../../../shared/components/buttons/download-report-button/download-report-button';
 import { AddButton } from '../../../../shared/components/buttons/add-button/add-button';
 import { UserProfileService } from '../../../services/user-profile.service/user-profile.service';
-import { DocumentExport } from '../../../../shared/services/export/document-export';
-import { Profile } from '../../../services/profile.service';
+import { PaginatedResponse, Profile } from '../../../services/profile.service';
 
 interface ProfileView {
   nombre: string;
@@ -38,72 +38,53 @@ export class ConsultUserProfile implements OnInit {
   totalRecords = 0;
 
   private userProfileService = inject(UserProfileService);
-  private documentExportService = inject(DocumentExport);
 
   ngOnInit(): void {
     this.cargarPerfiles();
   }
 
   /**
-   * Carga los perfiles desde el backend con paginación
+   * Carga los perfiles desde el backend con paginacion
    */
   cargarPerfiles(page: number = 1): void {
     this.isLoading = true;
     this.error = null;
     this.currentPage = page;
 
-    this.userProfileService.getPerfiles(page, this.pageSize).subscribe({
-      next: (respuesta: any) => {
-        console.log('Respuesta del backend:', respuesta);
-        
-        // Manejar tanto si es un array directo como si es un objeto con estructura PaginatedResponse
-        let perfiles: any[] = [];
-        let total: number = 0;
-        
-        if (Array.isArray(respuesta)) {
-          // Si es un array directo
-          perfiles = respuesta;
-          total = respuesta.length;
-        } else if (respuesta.data && Array.isArray(respuesta.data)) {
-          // Si es un PaginatedResponse con estructura {data: [], total: N, ...}
-          perfiles = respuesta.data;
-          total = respuesta.total || respuesta.data.length;
+    this.userProfileService.getPerfiles(page, this.pageSize)
+      .pipe(finalize(() => {
+        this.isLoading = false;
+      }))
+      .subscribe({
+        next: (respuesta: PaginatedResponse<Profile> | Profile[]) => {
+          const { perfiles, total } = this.normalizarRespuesta(respuesta);
+          this.data = perfiles.map((perfil) => this.mapToView(perfil));
+          this.totalRecords = total;
+          console.log('✓ Perfiles cargados:', this.data);
+        },
+        error: (err) => {
+          console.error('✗ Error al cargar perfiles:', err);
+          this.error = 'Error al cargar los perfiles. Intente nuevamente.';
+          // Si el backend retorna error, intentar cargar datos vacíos de demostración
+          this.data = [];
         }
-        
-        // Mapear las propiedades del backend al formato esperado por el frontend
-        this.data = perfiles.map((perfil: any) => ({
-          nombre: perfil.name,
-          descripcion: perfil.description,
-          activo: perfil.active,
-          id: perfil.id
-        }));
-        
-        console.log('Datos mapeados:', this.data);
-        this.totalRecords = total;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error al cargar perfiles:', err);
-        this.error = 'Error al cargar los perfiles. Intente nuevamente.';
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
   /**
-   * Método que se ejecuta cuando se solicita agregar un nuevo perfil
+   * Metodo que se ejecuta cuando se solicita agregar un nuevo perfil
    */
   onAgregar(): void {
     console.log('Agregar nuevo perfil');
-    // TODO: Navegar al formulario de creación o abrir modal
+    // TODO: Navegar al formulario de creacion o abrir modal
   }
 
   /**
-   * Método que se ejecuta cuando se solicita descargar el reporte
+   * Metodo que se ejecuta cuando se solicita descargar el reporte
    */
   onDescargar(): void {
     console.log('Descargar perfiles');
-    
+
     this.userProfileService.exportPerfiles().subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
@@ -121,9 +102,30 @@ export class ConsultUserProfile implements OnInit {
   }
 
   /**
-   * Método para cambiar de página en la paginación
+   * Metodo para cambiar de pagina en la paginacion
    */
   onPageChange(page: number): void {
     this.cargarPerfiles(page);
+  }
+
+  private normalizarRespuesta(
+    respuesta: PaginatedResponse<Profile> | Profile[]
+  ): { perfiles: Profile[]; total: number } {
+    if (Array.isArray(respuesta)) {
+      return { perfiles: respuesta, total: respuesta.length };
+    }
+
+    const perfiles = Array.isArray(respuesta.data) ? respuesta.data : [];
+    const total = respuesta.total || perfiles.length;
+    return { perfiles, total };
+  }
+
+  private mapToView(perfil: Profile): ProfileView {
+    return {
+      nombre: perfil.name,
+      descripcion: perfil.description,
+      activo: perfil.active,
+      id: perfil.id
+    };
   }
 }

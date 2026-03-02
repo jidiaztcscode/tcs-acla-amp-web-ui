@@ -6,7 +6,7 @@
   background-color: transparent;
   color: red;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
@@ -14,9 +14,7 @@
 }
 
 .edit-icon-button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   stroke: red;
 }
-
-

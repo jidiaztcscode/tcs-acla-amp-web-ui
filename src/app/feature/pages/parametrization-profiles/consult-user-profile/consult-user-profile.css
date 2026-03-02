@@ -1,17 +1,17 @@
 /* Contenedor principal con margen para el sidebar */
 .page-layout {
-  padding-left: 70px; /* Margen para el sidebar colapsado (50px + 20px de margen) */
+  padding-left: 70px; /* Sidebar colapsado (50px) + separacion */
   padding-top: 40px;
   padding-right: 40px;
   box-sizing: border-box;
-  min-height: calc(100vh - 80px); /* Asegurar altura mínima para mantener alineación */
+  min-height: calc(100vh - 80px);
 }
 
 .page-content {
   width: 100%;
 }
 
-/* Header container: título a la izquierda, botones a la derecha */
+/* Header: titulo a la izquierda, acciones a la derecha */
 .header-container {
   display: flex;
   justify-content: space-between;
@@ -20,13 +20,12 @@
   width: 100%;
 }
 
-/* Ajuste del título - asegurar que se vea completo */
 app-title {
   display: block;
   flex-shrink: 0;
 }
 
-/* Forzar que el h1 dentro del título tenga ancho completo y no se corte */
+/* Evita recorte del titulo en layouts amplios */
 app-title ::ng-deep h1,
 app-title h1,
 app-title .principal-title {
@@ -37,21 +36,30 @@ app-title .principal-title {
   margin: 0;
 }
 
-/* Contenedor de botones a la derecha */
+/* Replica posicionamiento visual de botones como en main */
 .button-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 25px;
+  position: relative;
+  height: 50px;
+  min-width: 420px;
   flex-shrink: 0;
 }
 
-/* Asegurar que los botones sean visibles */
+.btn-descargar {
+  position: absolute;
+  top: 0;
+  right: 300px;
+}
+
+.btn-agregar {
+  position: absolute;
+  top: 0;
+  right: 350px;
+}
+
 .btn-descargar,
 .btn-agregar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  transform: scale(1.2);
+  transform-origin: center center;
 }
 
 footer {
@@ -65,5 +73,3 @@ body {
 * {
   background-color: #fff;
 }
-
-
