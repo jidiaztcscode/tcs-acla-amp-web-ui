@@ -15,5 +15,6 @@ export const routes: Routes = [
       path: 'custom-reports',
       loadChildren: () =>
         import('./feature/pages/custom-reports/custom-reports-module').then(m => m.CustomReportsModule)
-  }
+  },
+  { path: '**', redirectTo: '/consultar-perfiles' }
 ];

@@ -22,7 +22,7 @@
         </div>
 
         <ul class="submenu-lateral" *ngIf="isSidebarOpen && item.children && expandedMenu === item.label">
-          <li class="submenu-item" *ngFor="let child of item.children" (click)="navigateTo(child.route)">
+          <li class="submenu-item" *ngFor="let child of item.children" (click)="navigateTo(child.route, $event)">
             {{ child.name }}
           </li>
         </ul>

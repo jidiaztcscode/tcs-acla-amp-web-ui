@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { User, UserRole } from '../../models/user.model';
-import { Subscription } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 
 interface MenuItem {
   icon: string;
@@ -23,9 +23,9 @@ export class Sidebar implements OnInit, OnDestroy {
   expandedMenu: string | null = null;
   currentUser: User | null = null;
   filteredMenuItems: MenuItem[] = [];
-  private userSubscription?: Subscription;
+  private subscriptions = new Subscription();
 
-  // Definición completa de todos los menús
+  // Definicion completa de todos los menus
   private allMenuItems: MenuItem[] = [
     {
       icon: 'assets/images/lupa-icon.png',
@@ -51,17 +51,27 @@ export class Sidebar implements OnInit, OnDestroy {
   constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit() {
-    // Suscribirse a cambios en el usuario
-    this.userSubscription = this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      this.filterMenuItems();
-    });
+    // Suscribirse a cambios en el usuario.
+    this.subscriptions.add(
+      this.authService.currentUser$.subscribe(user => {
+        this.currentUser = user;
+        this.filterMenuItems();
+      })
+    );
+
+    // Contraer sidebar al terminar cada navegacion.
+    this.subscriptions.add(
+      this.router.events
+        .pipe(filter(event => event instanceof NavigationEnd))
+        .subscribe(() => {
+          this.isSidebarOpen = false;
+          this.expandedMenu = null;
+        })
+    );
   }
 
   ngOnDestroy() {
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-    }
+    this.subscriptions.unsubscribe();
   }
 
   toggleSidebar() {
@@ -76,22 +86,22 @@ export class Sidebar implements OnInit, OnDestroy {
   }
 
   /**
-   * Filtra los menús según los permisos del usuario
+   * Filtra los menus segun los permisos del usuario
    */
   private filterMenuItems() {
     if (!this.currentUser) {
-      // Mostrar todos los menús cuando no hay usuario (para desarrollo/pruebas)
+      // Mostrar todos los menus cuando no hay usuario (para desarrollo/pruebas)
       this.filteredMenuItems = this.allMenuItems;
       return;
     }
 
-    // Si el usuario no tiene permisos definidos, mostrar todos los menús
+    // Si el usuario no tiene permisos definidos, mostrar todos los menus
     if (!this.currentUser.permissions || this.currentUser.permissions.length === 0) {
       this.filteredMenuItems = this.allMenuItems;
       return;
     }
 
-    // Filtrar menús basándose en los permisos del usuario
+    // Filtrar menus basandose en los permisos del usuario
     this.filteredMenuItems = this.allMenuItems.filter(item =>
       this.currentUser!.permissions.includes(item.label)
     );
@@ -112,13 +122,13 @@ export class Sidebar implements OnInit, OnDestroy {
   }
 
   /**
-   * Propiedad para acceder a los menús filtrados en el template
+   * Propiedad para acceder a los menus filtrados en el template
    */
   get menuItems(): MenuItem[] {
     return this.filteredMenuItems;
   }
 
-  // Métodos para pruebas (pueden ser llamados desde la consola del navegador)
+  // Metodos para pruebas (pueden ser llamados desde la consola del navegador)
   setAdminRole() {
     this.authService.setUserRole(UserRole.ADMIN).subscribe();
   }
@@ -130,11 +140,12 @@ export class Sidebar implements OnInit, OnDestroy {
   /**
    * Navega a la ruta especificada si existe
    */
-  navigateTo(route?: string) {
+  navigateTo(route?: string, event?: Event) {
+    event?.stopPropagation();
     if (route) {
       this.router.navigate([route]);
-      this.expandedMenu = null; // Cerrar el submenu después de navegar
+      this.isSidebarOpen = false;
+      this.expandedMenu = null; // Cerrar el submenu despues de navegar
     }
   }
 }
-
