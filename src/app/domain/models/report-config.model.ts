@@ -28,6 +28,7 @@ export interface ReportColumn {
 export interface ReportFilter {
   idFiltro?: number;
   idDetvista: number;
+  nomcampo?: string;
   orden: number;
   incluyente: string;
   tipoFiltro: number;

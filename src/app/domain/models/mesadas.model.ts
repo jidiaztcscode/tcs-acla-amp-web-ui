@@ -67,4 +67,6 @@ export interface MesadasQueryParams {
   size?: number;
   sort?: string;
   direction?: string;
+  // Allow additional dynamic filter fields
+  [key: string]: string | number | undefined;
 }

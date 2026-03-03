@@ -31,7 +31,7 @@
                         <tr>
                             @for (col of displayedColumns; track $index) {
                             <td>
-                                {{ item[col.text] }}
+                                {{ item[col.keyName] }}
                             </td>
                             }
                         </tr>
@@ -131,12 +131,20 @@
             </mat-tab>
             <mat-tab label="Filtros" [disabled]="displayedColumns.length < 1">
                 
-                @for(filter of filtersList; track $index) {
+                @if (displayedColumnsFilter.length === 0) {
+                    <div class="no-columns-message" style="text-align: center; padding: 2rem; color: #666;">
+                        <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #e53935;">info</mat-icon>
+                        <p style="margin: 1rem 0;">Debe seleccionar al menos una columna en la pestaña "Grupo de datos" para poder configurar filtros.</p>
+                        <app-text-button (onClick)="changeTab(0)">Ir a Grupo de datos</app-text-button>
+                    </div>
+                } @else {
+                
+                @for(filter of filtersList; track filter; let idx = $index) {
                     <div class="form-row">
-                        @if ($index > 0) {
+                        @if (idx > 0) {
                             <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 60px;">
                                 <mat-select [(ngModel)]="filter.connector">
-                                    @for (item of ['y', 'o']; track $index) {
+                                    @for (item of connectorOptions; track item) {
                                         <mat-option [value]="item"> {{ item }}</mat-option>
                                     }
                                 </mat-select>
@@ -145,15 +153,15 @@
                             <div class="davi-custom-mat-input-height" style="width: 60px;"></div>
                         }
                         <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 200px;">
-                            <mat-select [(ngModel)]="filter.idDetvista">
-                                @for (item of displayedColumnsFilter; track $index) {
+                            <mat-select [(ngModel)]="filter.idDetvista" (selectionChange)="onFilterFieldChange(filter)">
+                                @for (item of displayedColumnsFilter; track item.idDetvista) {
                                     <mat-option [value]="item.idDetvista">{{ item.text }}</mat-option>
                                 }
                             </mat-select>
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 180px;">
                             <mat-select [(ngModel)]="filter.conditional">
-                                @for (conditional of conditionalsList; track $index) {
+                                @for (conditional of conditionalsList; track conditional.value) {
                                     <mat-option [value]="conditional.value">{{ conditional.name }}</mat-option>
                                 }
                             </mat-select>
@@ -161,21 +169,22 @@
                         <mat-form-field appearance="outline" class="davi-custom-mat-input-height" style="width: 180px;">
                             <input matInput [(ngModel)]="filter.value" placeholder="Valor">
                         </mat-form-field>
-                        @if ($index == filtersList.length - 1) {
+                        @if (idx == filtersList.length - 1) {
                             <app-icon-button action="add" [disabled]="filter.idDetvista == null || filter.conditional == ''" (onClick)="addFilter()"/>
                         } @else {
-                            <app-icon-button color="grey" action="remove"/>
+                            <app-icon-button color="grey" action="remove" (onClick)="removeFilter(idx)"/>
                         }
                     </div>
                 }
 
                 <div class="button-wrapper content-center">
-                    <app-text-button 
-                        [disabled]="displayedColumns.length < 1" 
+                    <app-text-button
+                        [disabled]="displayedColumns.length < 1"
                         (onClick)="changeTab(2)">
                         Siguiente
                     </app-text-button>
                 </div>
+                }
             </mat-tab>
             <mat-tab label="Informacion de la consulta" [disabled]="displayedColumns.length < 1">
                 <div class="form-row">

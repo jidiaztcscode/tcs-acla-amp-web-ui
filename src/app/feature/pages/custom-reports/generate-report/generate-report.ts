@@ -36,6 +36,7 @@ export class GenerateReport implements OnInit {
 
   filterList: any[] = [];
   filterValues: { [key: string]: any } = {};
+  vistaFieldById: { [key: number]: string } = {};
 
   resultsList: any[] = [];
   columnsList: any[] = [];
@@ -75,6 +76,14 @@ export class GenerateReport implements OnInit {
           if (isRight(vistaResult)) {
             this.vista = vistaResult.right;
           }
+
+          const columnasResult = await this.vistaDatasource.obtenerColumnas(this.reportConfig.idvista);
+          if (isRight(columnasResult)) {
+            this.vistaFieldById = columnasResult.right.reduce((acc: { [key: number]: string }, col: any) => {
+              acc[Number(col.idDetvista)] = col.nomcolunna;
+              return acc;
+            }, {});
+          }
         }
         
         // Map columns
@@ -87,11 +96,11 @@ export class GenerateReport implements OnInit {
           }));
         }
         
-        // Map filters (prefer a named field if available, fallback to idDetvista)
+        // Map filters (resolve by name first; fallback to idDetvista)
         if (this.reportConfig.filters) {
           this.filterList = this.reportConfig.filters.map((f: any, idx: number) => {
-            const fieldKey = f.nomcampo || f.idDetvista;
-            const fieldKeyLower = fieldKey.toLowerCase();
+            const fieldKey = this.resolveFilterFieldKey(f);
+            const fieldKeyLower = String(fieldKey).toLowerCase();
             
             // Determine field type based on field name heuristics
             let fieldType = 'string';
@@ -170,6 +179,73 @@ export class GenerateReport implements OnInit {
     return filterMap[tipoFiltro] || 'equal';
   }
 
+  private resolveFilterFieldKey(filter: any): string {
+    const nomcampo = filter?.nomcampo;
+    if (typeof nomcampo === 'string' && nomcampo.trim().length > 0) {
+      return nomcampo.trim();
+    }
+
+    const idDetvista = Number(filter?.idDetvista);
+    if (!Number.isNaN(idDetvista) && this.vistaFieldById[idDetvista]) {
+      return this.vistaFieldById[idDetvista];
+    }
+
+    if (!Number.isNaN(idDetvista) && this.reportConfig?.columns?.length) {
+      const column = this.reportConfig.columns.find(col => Number(col.idDetvista) === idDetvista);
+      if (column?.nomcampo) {
+        return column.nomcampo;
+      }
+    }
+
+    return String(filter?.idDetvista ?? '');
+  }
+
+  private mapFieldNameToParamName(fieldName: string): string {
+    // Map common field names to query parameter names
+    const nameMap: { [key: string]: string } = {
+      'fechaInicio': 'fechaInicio',
+      'fechaFin': 'fechaFin',
+      'empresa': 'empresa',
+      'afiliacion': 'afiliacion',
+      'numeroAfiliacionPago': 'afiliacion',
+      'cuentaPensionado': 'cuentaPensionado',
+      'numeroCuentaPensionado': 'cuentaPensionado',
+      'documento': 'documento',
+      'tipoDocumento': 'tipoDocumento',
+      'tipoid': 'tipoDocumento',
+      'cuentaPagadora': 'cuentaPagadora',
+      'identificadorDetalle': 'identificadorDetalle',
+      'oficinaApertura': 'oficinaApertura',
+      'fechaAbonoMesada': 'fechaAbonoMesada',
+      'numeroidPensionado': 'numeroidPensionado'
+    };
+    
+    // Return mapped name or use fieldName as-is if no mapping exists
+    return nameMap[fieldName] || fieldName;
+  }
+
+  private applyPaginatedResponse(response: any): void {
+    const items = Array.isArray(response?.data)
+      ? response.data
+      : Array.isArray(response?.items)
+        ? response.items
+        : [];
+
+    const totalRecords = Number(response?.total ?? response?.totalRecords ?? items.length);
+    const page = Number(response?.page ?? 1);
+    const pageSize = Number(response?.pageSize ?? this.pageSize);
+    const totalPages = Number(
+      response?.totalPages ??
+      (pageSize > 0 ? Math.ceil(totalRecords / pageSize) : 1)
+    );
+
+    this.resultsList = items;
+    this.totalRecords = totalRecords;
+    this.totalPages = totalPages;
+    this.currentPage = page;
+    this.pageSize = pageSize;
+  }
+
   async onGenerate(): Promise<void> {
     if (!this.vista) {
       alert('No se ha cargado la vista del reporte');
@@ -213,26 +289,39 @@ export class GenerateReport implements OnInit {
       size: this.pageSize
     };
 
-    console.log('Built queryParams for request:', queryParams);
+    console.log('Built queryParams for request (base):', queryParams);
+    console.log('filterList:', this.filterList);
+    console.log('filterValues:', this.filterValues);
 
-    // Add optional filters
-    if (this.filterValues['empresa']) queryParams.empresa = this.filterValues['empresa'];
-    if (this.filterValues['afiliacion']) queryParams.afiliacion = this.filterValues['afiliacion'];
-    if (this.filterValues['cuentaPensionado']) queryParams.cuentaPensionado = this.filterValues['cuentaPensionado'];
-    if (this.filterValues['documento']) queryParams.documento = this.filterValues['documento'];
-    if (this.filterValues['tipoDocumento']) queryParams.tipoDocumento = this.filterValues['tipoDocumento'];
-    if (this.filterValues['cuentaPagadora']) queryParams.cuentaPagadora = this.filterValues['cuentaPagadora'];
+    // Add all dynamic filters from filterList
+    this.filterList.forEach(filter => {
+      const fieldKey = filter.fieldKey;
+      const value = this.filterValues[fieldKey];
+      
+      console.log(`Processing filter: ${fieldKey}, value: ${value}`);
+      
+      // Skip date filters as they're already added
+      if (fieldKey === 'fechaInicio' || fieldKey === 'fechaFin') {
+        return;
+      }
+      
+      // Add filter value if it exists
+      if (value !== null && value !== undefined && value !== '') {
+        // Map field names to query param names
+        const paramName = this.mapFieldNameToParamName(fieldKey);
+        (queryParams as any)[paramName] = value;
+        console.log(`Added filter: ${paramName} = ${value}`);
+      }
+    });
+
+    console.log('Final queryParams for request:', queryParams);
 
     this.isLoading = true;
     try {
       if (endpoint === 'pagos') {
         const result = await this.mesadasDatasource.consultarPagos(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.data;
-          this.totalRecords = result.right.total;
-          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
-          this.currentPage = result.right.page;
-          this.pageSize = result.right.pageSize;
+          this.applyPaginatedResponse(result.right);
           console.log('Pagos loaded:', this.resultsList);
         } else {
           this.errorMessage = result.left.message;
@@ -241,11 +330,7 @@ export class GenerateReport implements OnInit {
       } else if (endpoint === 'rechazos') {
         const result = await this.mesadasDatasource.consultarRechazos(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.data;
-          this.totalRecords = result.right.total;
-          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
-          this.currentPage = result.right.page;
-          this.pageSize = result.right.pageSize;
+          this.applyPaginatedResponse(result.right);
           console.log('Rechazos loaded:', this.resultsList);
         } else {
           this.errorMessage = result.left.message;
@@ -268,11 +353,7 @@ export class GenerateReport implements OnInit {
       } else if (endpoint === 'aperturas') {
         const result = await this.cuentasDatasource.consultarAperturas(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.data;
-          this.totalRecords = result.right.total;
-          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
-          this.currentPage = result.right.page;
-          this.pageSize = result.right.pageSize;
+          this.applyPaginatedResponse(result.right);
           console.log('Aperturas loaded:', this.resultsList);
         } else {
           this.errorMessage = result.left.message;
@@ -281,11 +362,7 @@ export class GenerateReport implements OnInit {
       } else if (endpoint === 'inactivas') {
         const result = await this.cuentasDatasource.consultarInactivas(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.data;
-          this.totalRecords = result.right.total;
-          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
-          this.currentPage = result.right.page;
-          this.pageSize = result.right.pageSize;
+          this.applyPaginatedResponse(result.right);
           console.log('Inactivas loaded:', this.resultsList);
         } else {
           this.errorMessage = result.left.message;

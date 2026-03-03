@@ -59,6 +59,8 @@ export class CustomReport implements OnInit {
     { idDetvista: null, conditional: '', connector: '' },
   ];
 
+  connectorOptions: string[] = ['y', 'o'];
+
   conditionalsList: any = [
     { value: 'equal', name: 'igual que' },
     { value: 'greater_than', name: 'Mayor que' },
@@ -121,7 +123,11 @@ export class CustomReport implements OnInit {
 
   onChangeCheck(checked: boolean, field: any) {
     if (checked) {
-      this.displayedColumns.push({ keyName: field.fieldKey, text: field.fieldName });
+      this.displayedColumns.push({
+        keyName: field.fieldKey,
+        text: field.fieldName,
+        idDetvista: field.idDetvista
+      });
     } else {
       let itemRemove = this.displayedColumns.findIndex((col: any) => col.keyName === field.fieldKey);
       if (itemRemove !== -1) {
@@ -139,15 +145,39 @@ export class CustomReport implements OnInit {
   }
 
   changeTab(index: number) {
+    // Validar que haya columnas seleccionadas antes de ir a filtros o información
+    if ((index === 1 || index === 2) && this.displayedColumns.length < 1) {
+      alert('Debe seleccionar al menos una columna en "Grupo de datos" antes de continuar');
+      this.selectedTab = 0;
+      return;
+    }
     this.selectedTab = index;
   }
 
   addFilter() {
     this.filtersList.push({
-      idDetvista: null, 
+      idDetvista: null,
       conditional: '',
-      connector: ''
+      connector: 'y'
     });
+    console.log('Filter added. Current filtersList:', this.filtersList);
+  }
+
+  onFilterFieldChange(filter: any) {
+    // Ensure idDetvista is stored as a number
+    if (filter.idDetvista !== null) {
+      filter.idDetvista = Number(filter.idDetvista);
+    }
+    console.log('Filter field changed:', filter);
+  }
+
+  removeFilter(index: number) {
+    if (this.filtersList.length > 1) {
+      this.filtersList.splice(index, 1);
+    } else {
+      // Si es el último filtro, solo lo reiniciamos
+      this.filtersList[0] = { idDetvista: null, conditional: '', connector: '' };
+    }
   }
 
   toggleTextJustification(field: any) {
@@ -252,12 +282,19 @@ export class CustomReport implements OnInit {
                 
                 this.displayedColumns.push({
                   keyName: field.fieldKey,
-                  text: field.fieldName
+                  text: field.fieldName,
+                  idDetvista: field.idDetvista
                 });
               }
             });
             
-            this.displayedColumnsFilter = [...this.displayedColumns];
+            this.displayedColumnsFilter = this.groupDataList
+              .filter(field => field.isSelected)
+              .map(field => ({
+                keyName: field.fieldKey,
+                text: field.fieldName,
+                idDetvista: field.idDetvista
+              }));
           }
         }
         
@@ -324,13 +361,18 @@ export class CustomReport implements OnInit {
       })),
       filters: this.filtersList
         .filter((f: any) => f.idDetvista && f.conditional)
-        .map((f: any, index: number) => ({
-          idDetvista: Number(f.idDetvista),
-          orden: index + 1,
-          incluyente: f.connector?.toUpperCase() || 'Y',
-          tipoFiltro: this.mapConditionalToFilterType(f.conditional),
-          valFiltro: f.value || ''
-        }))
+        .map((f: any, index: number) => {
+          // Buscar el nombre del campo basado en idDetvista
+          const fieldConfig = this.groupDataList.find(g => g.idDetvista === f.idDetvista);
+          return {
+            idDetvista: Number(f.idDetvista),
+            nomcampo: fieldConfig?.fieldKey || '',
+            orden: index + 1,
+            incluyente: f.connector?.toUpperCase() || 'Y',
+            tipoFiltro: this.mapConditionalToFilterType(f.conditional),
+            valFiltro: f.value || ''
+          };
+        })
     };
 
     this.isLoading = true;
