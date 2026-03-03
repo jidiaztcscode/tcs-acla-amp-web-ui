@@ -246,17 +246,9 @@ export class GenerateReport implements OnInit {
     this.pageSize = pageSize;
   }
 
-  async onGenerate(): Promise<void> {
-    if (!this.vista) {
-      alert('No se ha cargado la vista del reporte');
-      return;
-    }
+  private resolveEndpoint(): string | null {
+    if (!this.vista) return null;
 
-    console.log('Generating report with filterList:', this.filterList);
-    console.log('Current filterValues:', this.filterValues);
-
-    // Use idvista to determine the endpoint for more robust matching
-    // 1 = pagos, 2 = rechazos, 3 = certificados
     const endpointMap: { [key: number]: string } = {
       1: 'pagos',
       2: 'rechazos',
@@ -265,109 +257,171 @@ export class GenerateReport implements OnInit {
       5: 'inactivas'
     };
 
-    const endpoint = endpointMap[this.vista.idvista];
-    
-    if (!endpoint) {
-      alert('No se pudo determinar el endpoint para esta vista');
-      return;
-    }
+    return endpointMap[this.vista.idvista] || null;
+  }
 
-    // Build query params from filter values (require user to provide fechas)
+  private buildQueryParams(page: number, size: number): MesadasQueryParams | null {
     const fechaInicio = this.filterValues['fechaInicio'] ? this.formatDate(this.filterValues['fechaInicio']) : null;
     const fechaFin = this.filterValues['fechaFin'] ? this.formatDate(this.filterValues['fechaFin']) : null;
 
     if (!fechaInicio || !fechaFin) {
-      this.isLoading = false;
       alert('Por favor seleccione Fecha inicio y Fecha fin para generar el reporte');
-      return;
+      return null;
     }
 
     const queryParams: MesadasQueryParams = {
       fechaInicio,
       fechaFin,
-      page: this.currentPage,
-      size: this.pageSize
+      page,
+      size
     };
 
-    console.log('Built queryParams for request (base):', queryParams);
-    console.log('filterList:', this.filterList);
-    console.log('filterValues:', this.filterValues);
-
-    // Add all dynamic filters from filterList
     this.filterList.forEach(filter => {
       const fieldKey = filter.fieldKey;
       const value = this.filterValues[fieldKey];
-      
-      console.log(`Processing filter: ${fieldKey}, value: ${value}`);
-      
-      // Skip date filters as they're already added
+
       if (fieldKey === 'fechaInicio' || fieldKey === 'fechaFin') {
         return;
       }
-      
-      // Add filter value if it exists
+
       if (value !== null && value !== undefined && value !== '') {
-        // Map field names to query param names
         const paramName = this.mapFieldNameToParamName(fieldKey);
         (queryParams as any)[paramName] = value;
-        console.log(`Added filter: ${paramName} = ${value}`);
       }
     });
 
-    console.log('Final queryParams for request:', queryParams);
+    return queryParams;
+  }
+
+  private async fetchPage(endpoint: string, queryParams: MesadasQueryParams): Promise<any | null> {
+    if (endpoint === 'pagos') {
+      const result = await this.mesadasDatasource.consultarPagos(queryParams);
+      if (isRight(result)) return result.right;
+      this.errorMessage = result.left.message;
+      alert('Error al generar reporte: ' + result.left.message);
+      return null;
+    }
+
+    if (endpoint === 'rechazos') {
+      const result = await this.mesadasDatasource.consultarRechazos(queryParams);
+      if (isRight(result)) return result.right;
+      this.errorMessage = result.left.message;
+      alert('Error al generar reporte: ' + result.left.message);
+      return null;
+    }
+
+    if (endpoint === 'aperturas') {
+      const result = await this.cuentasDatasource.consultarAperturas(queryParams);
+      if (isRight(result)) return result.right;
+      this.errorMessage = result.left.message;
+      alert('Error al generar reporte: ' + result.left.message);
+      return null;
+    }
+
+    if (endpoint === 'inactivas') {
+      const result = await this.cuentasDatasource.consultarInactivas(queryParams);
+      if (isRight(result)) return result.right;
+      this.errorMessage = result.left.message;
+      alert('Error al generar reporte: ' + result.left.message);
+      return null;
+    }
+
+    if (endpoint === 'certificados') {
+      const result = await this.mesadasDatasource.consultarCertificados(
+        queryParams.fechaInicio,
+        queryParams.fechaFin
+      );
+      if (isRight(result)) return result.right;
+      this.errorMessage = result.left.message;
+      alert('Error al generar reporte: ' + result.left.message);
+      return null;
+    }
+
+    return null;
+  }
+
+  private async fetchAllDataForExport(): Promise<any[] | null> {
+    if (!this.vista) {
+      alert('No se ha cargado la vista del reporte');
+      return null;
+    }
+
+    const endpoint = this.resolveEndpoint();
+    if (!endpoint) {
+      alert('No se pudo determinar el endpoint para esta vista');
+      return null;
+    }
+
+    const exportPageSize = this.pageSize > 0 ? this.pageSize : 10;
+    const firstQueryParams = this.buildQueryParams(1, exportPageSize);
+    if (!firstQueryParams) return null;
+
+    const firstResponse = await this.fetchPage(endpoint, firstQueryParams);
+    if (!firstResponse) return null;
+
+    if (endpoint === 'certificados') {
+      return Array.isArray(firstResponse) ? firstResponse : [];
+    }
+
+    const firstItems = Array.isArray(firstResponse?.data)
+      ? firstResponse.data
+      : Array.isArray(firstResponse?.items)
+        ? firstResponse.items
+        : [];
+
+    const pageSize = Number(firstResponse?.pageSize ?? exportPageSize);
+    const totalRecords = Number(firstResponse?.total ?? firstResponse?.totalRecords ?? firstItems.length);
+    const totalPages = Number(
+      firstResponse?.totalPages ??
+      (pageSize > 0 ? Math.ceil(totalRecords / pageSize) : 1)
+    );
+    const allItems = [...firstItems];
+
+    for (let page = 2; page <= totalPages; page++) {
+      const pageQueryParams = this.buildQueryParams(page, pageSize);
+      if (!pageQueryParams) return null;
+
+      const pageResponse = await this.fetchPage(endpoint, pageQueryParams);
+      if (!pageResponse) return null;
+
+      const pageItems = Array.isArray(pageResponse?.data)
+        ? pageResponse.data
+        : Array.isArray(pageResponse?.items)
+          ? pageResponse.items
+          : [];
+
+      allItems.push(...pageItems);
+    }
+
+    return allItems;
+  }
+
+  async onGenerate(): Promise<void> {
+    if (!this.vista) {
+      alert('No se ha cargado la vista del reporte');
+      return;
+    }
+
+    const endpoint = this.resolveEndpoint();
+    if (!endpoint) {
+      alert('No se pudo determinar el endpoint para esta vista');
+      return;
+    }
+    const queryParams = this.buildQueryParams(this.currentPage, this.pageSize);
+    if (!queryParams) return;
 
     this.isLoading = true;
     try {
-      if (endpoint === 'pagos') {
-        const result = await this.mesadasDatasource.consultarPagos(queryParams);
-        if (isRight(result)) {
-          this.applyPaginatedResponse(result.right);
-          console.log('Pagos loaded:', this.resultsList);
-        } else {
-          this.errorMessage = result.left.message;
-          alert('Error al generar reporte: ' + result.left.message);
-        }
-      } else if (endpoint === 'rechazos') {
-        const result = await this.mesadasDatasource.consultarRechazos(queryParams);
-        if (isRight(result)) {
-          this.applyPaginatedResponse(result.right);
-          console.log('Rechazos loaded:', this.resultsList);
-        } else {
-          this.errorMessage = result.left.message;
-          alert('Error al generar reporte: ' + result.left.message);
-        }
-      } else if (endpoint === 'certificados') {
-        const result = await this.mesadasDatasource.consultarCertificados(
-          queryParams.fechaInicio,
-          queryParams.fechaFin
-        );
-        if (isRight(result)) {
-          this.resultsList = result.right;
-          this.totalRecords = result.right.length;
-          this.totalPages = 1;
-          console.log('Certificados loaded:', this.resultsList);
-        } else {
-          this.errorMessage = result.left.message;
-          alert('Error al generar reporte: ' + result.left.message);
-        }
-      } else if (endpoint === 'aperturas') {
-        const result = await this.cuentasDatasource.consultarAperturas(queryParams);
-        if (isRight(result)) {
-          this.applyPaginatedResponse(result.right);
-          console.log('Aperturas loaded:', this.resultsList);
-        } else {
-          this.errorMessage = result.left.message;
-          alert('Error al generar reporte: ' + result.left.message);
-        }
-      } else if (endpoint === 'inactivas') {
-        const result = await this.cuentasDatasource.consultarInactivas(queryParams);
-        if (isRight(result)) {
-          this.applyPaginatedResponse(result.right);
-          console.log('Inactivas loaded:', this.resultsList);
-        } else {
-          this.errorMessage = result.left.message;
-          alert('Error al generar reporte: ' + result.left.message);
-        }
+      const response = await this.fetchPage(endpoint, queryParams);
+      if (!response) return;
+
+      if (endpoint === 'certificados') {
+        this.resultsList = Array.isArray(response) ? response : [];
+        this.totalRecords = this.resultsList.length;
+        this.totalPages = 1;
+        this.currentPage = 1;
+      } else {
+        this.applyPaginatedResponse(response);
       }
     } catch (error) {
       console.error('Error generating report:', error);
@@ -398,56 +452,88 @@ export class GenerateReport implements OnInit {
   }
 
   async onGenerateExcel(): Promise<void> {
-    if (this.resultsList.length === 0) {
+    this.isLoading = true;
+    let exportSource: any[] | null = null;
+    try {
+      exportSource = await this.fetchAllDataForExport();
+    } finally {
+      this.isLoading = false;
+    }
+
+    if (!exportSource || exportSource.length === 0) {
       alert('No hay datos para exportar');
       return;
     }
 
     const title = this.reportConfig?.nomconsulta || 'Reporte';
-    const headers = this.getExportHeaders();
-    const data = this.prepareExportData();
+    const headers = this.getExportHeaders(exportSource);
+    const data = this.prepareExportData(exportSource);
     const filename = this.generateFilename();
 
     await this.documentExport.exportExcel(title, headers, data, filename);
   }
 
   async onGeneratecsv(): Promise<void> {
-    if (this.resultsList.length === 0) {
+    this.isLoading = true;
+    let exportSource: any[] | null = null;
+    try {
+      exportSource = await this.fetchAllDataForExport();
+    } finally {
+      this.isLoading = false;
+    }
+
+    if (!exportSource || exportSource.length === 0) {
       alert('No hay datos para exportar');
       return;
     }
 
     const title = this.reportConfig?.nomconsulta || 'Reporte';
-    const headers = this.getExportHeaders();
-    const data = this.prepareExportData();
+    const headers = this.getExportHeaders(exportSource);
+    const data = this.prepareExportData(exportSource);
     const filename = this.generateFilename();
 
     await this.documentExport.exportCsv(title, headers, data, filename);
   }
 
   async onGeneratetxt(): Promise<void> {
-    if (this.resultsList.length === 0) {
+    this.isLoading = true;
+    let exportSource: any[] | null = null;
+    try {
+      exportSource = await this.fetchAllDataForExport();
+    } finally {
+      this.isLoading = false;
+    }
+
+    if (!exportSource || exportSource.length === 0) {
       alert('No hay datos para exportar');
       return;
     }
 
     const title = this.reportConfig?.nomconsulta || 'Reporte';
-    const headers = this.getExportHeaders();
-    const data = this.prepareExportData();
+    const headers = this.getExportHeaders(exportSource);
+    const data = this.prepareExportData(exportSource);
     const filename = this.generateFilename();
 
     await this.documentExport.exportTxt(title, headers, data, filename);
   }
   
   async onGeneratepdf(): Promise<void> {
-    if (this.resultsList.length === 0) {
+    this.isLoading = true;
+    let exportSource: any[] | null = null;
+    try {
+      exportSource = await this.fetchAllDataForExport();
+    } finally {
+      this.isLoading = false;
+    }
+
+    if (!exportSource || exportSource.length === 0) {
       alert('No hay datos para exportar');
       return;
     }
 
     const title = this.reportConfig?.nomconsulta || 'Reporte';
-    const headers = this.getExportHeaders();
-    const data = this.prepareExportData();
+    const headers = this.getExportHeaders(exportSource);
+    const data = this.prepareExportData(exportSource);
     const filename = this.generateFilename();
 
     await this.documentExport.exportPdf(title, headers, data, filename);
@@ -456,14 +542,14 @@ export class GenerateReport implements OnInit {
   /**
    * Get headers for export based on configured columns
    */
-  private getExportHeaders(): string[] {
+  private getExportHeaders(sourceData: any[] = this.resultsList): string[] {
     if (this.columnsList.length > 0) {
       return this.columnsList.map(col => col.text);
     }
     
     // Fallback: use keys from first result item
-    if (this.resultsList.length > 0) {
-      return Object.keys(this.resultsList[0]);
+    if (sourceData.length > 0) {
+      return Object.keys(sourceData[0]);
     }
     
     return [];
@@ -472,13 +558,13 @@ export class GenerateReport implements OnInit {
   /**
    * Prepare data for export by filtering only the configured columns
    */
-  private prepareExportData(): any[] {
+  private prepareExportData(sourceData: any[] = this.resultsList): any[] {
     if (this.columnsList.length === 0) {
-      return this.resultsList;
+      return sourceData;
     }
 
     // Map results to only include configured columns in the correct order
-    return this.resultsList.map(item => {
+    return sourceData.map(item => {
       const exportItem: any = {};
       this.columnsList.forEach(col => {
         const key = col.keyName;
