@@ -50,6 +50,10 @@ export class GenerateReport implements OnInit {
   pageSize: number = 10;
   totalRecords: number = 0;
   totalPages: number = 0;
+  private readonly exportPageSize: number = 1000;
+  private readonly exportConcurrency: number = 4;
+  private lastExportCacheKey: string = '';
+  private lastExportCacheData: any[] | null = null;
 
   async ngOnInit(): Promise<void> {
     const params = this.activatedRoute.snapshot.params;
@@ -352,15 +356,27 @@ export class GenerateReport implements OnInit {
       return null;
     }
 
-    const exportPageSize = this.pageSize > 0 ? this.pageSize : 10;
+    const exportPageSize = this.exportPageSize;
     const firstQueryParams = this.buildQueryParams(1, exportPageSize);
     if (!firstQueryParams) return null;
+
+    const cacheParams = { ...firstQueryParams };
+    delete (cacheParams as any).page;
+    delete (cacheParams as any).size;
+    const exportCacheKey = `${endpoint}|${JSON.stringify(cacheParams)}`;
+
+    if (this.lastExportCacheKey === exportCacheKey && this.lastExportCacheData) {
+      return [...this.lastExportCacheData];
+    }
 
     const firstResponse = await this.fetchPage(endpoint, firstQueryParams);
     if (!firstResponse) return null;
 
     if (endpoint === 'certificados') {
-      return Array.isArray(firstResponse) ? firstResponse : [];
+      const certItems = Array.isArray(firstResponse) ? firstResponse : [];
+      this.lastExportCacheKey = exportCacheKey;
+      this.lastExportCacheData = certItems;
+      return [...certItems];
     }
 
     const firstItems = Array.isArray(firstResponse?.data)
@@ -377,23 +393,36 @@ export class GenerateReport implements OnInit {
     );
     const allItems = [...firstItems];
 
+    const pendingPages: number[] = [];
     for (let page = 2; page <= totalPages; page++) {
-      const pageQueryParams = this.buildQueryParams(page, pageSize);
-      if (!pageQueryParams) return null;
-
-      const pageResponse = await this.fetchPage(endpoint, pageQueryParams);
-      if (!pageResponse) return null;
-
-      const pageItems = Array.isArray(pageResponse?.data)
-        ? pageResponse.data
-        : Array.isArray(pageResponse?.items)
-          ? pageResponse.items
-          : [];
-
-      allItems.push(...pageItems);
+      pendingPages.push(page);
     }
 
-    return allItems;
+    for (let i = 0; i < pendingPages.length; i += this.exportConcurrency) {
+      const pageBatch = pendingPages.slice(i, i + this.exportConcurrency);
+      const batchResponses = await Promise.all(
+        pageBatch.map(async (page) => {
+          const pageQueryParams: MesadasQueryParams = { ...firstQueryParams, page, size: pageSize };
+          const pageResponse = await this.fetchPage(endpoint, pageQueryParams);
+          return { page, pageResponse };
+        })
+      );
+
+      for (const { pageResponse } of batchResponses.sort((a, b) => a.page - b.page)) {
+        if (!pageResponse) return null;
+
+        const pageItems = Array.isArray(pageResponse?.data)
+          ? pageResponse.data
+          : Array.isArray(pageResponse?.items)
+            ? pageResponse.items
+            : [];
+        allItems.push(...pageItems);
+      }
+    }
+
+    this.lastExportCacheKey = exportCacheKey;
+    this.lastExportCacheData = allItems;
+    return [...allItems];
   }
 
   async onGenerate(): Promise<void> {
