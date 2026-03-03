@@ -42,13 +42,12 @@
                             @switch (filter.type) {
                                 @case ('date') {
                                     <mat-form-field appearance="outline" style="width: auto;" class="custom-date-picker">
-                                        <mat-label [innerHTML]="filter.fieldKey"></mat-label>
-                                        <input 
-                                            matInput 
-                                            (focus)="picker.open()" 
-                                            [matDatepicker]="picker" 
-                                            id="davi-input-filter-{{$index}}" 
-                                            [(ngModel)]="filterValues[filter.fieldKey]" 
+                                        <input
+                                            matInput
+                                            (focus)="picker.open()"
+                                            [matDatepicker]="picker"
+                                            id="davi-input-filter-{{$index}}"
+                                            [(ngModel)]="filterValues[filter.fieldKey]"
                                             name="filter-{{$index}}"
                                             [required]="filter.required"
                                             placeholder="YYYY-MM-DD">
@@ -131,7 +130,7 @@
     <app-text-button (click)="onGenerate()">Generar</app-text-button>
     </div>
     <div class="button-wrapper">
-        <h3 style="color: #8b8989;">Total registros encontrados: 4</h3>
+        <h3 style="color: #8b8989;">Total registros encontrados: {{ totalRecords || 0 }}</h3>
     </div>
      <!-- Tabla registros -->
     <div class="tabla-container">
