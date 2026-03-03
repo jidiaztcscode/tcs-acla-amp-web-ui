@@ -8,12 +8,16 @@ import { ReportConfig, Vista } from '../../../../domain/models/report-config.mod
 import { MesadasQueryParams } from '../../../../domain/models/mesadas.model';
 import { DocumentExport } from '../../../../shared/services/export/document-export';
 import { isRight } from 'fp-ts/Either';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 @Component({
   selector: 'app-generate-report',
   templateUrl: './generate-report.html',
   styleUrl: './generate-report.scss',
   standalone: false,
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' }
+  ]
 })
 export class GenerateReport implements OnInit {
 
@@ -85,16 +89,55 @@ export class GenerateReport implements OnInit {
         
         // Map filters (prefer a named field if available, fallback to idDetvista)
         if (this.reportConfig.filters) {
-          this.filterList = this.reportConfig.filters.map((f: any, idx: number) => ({
-            fieldKey: f.nomcampo || f.idDetvista,
-            conditional: this.mapFilterTypeToConditional(f.tipoFiltro),
-            connector: f.incluyente,
-            // Heuristics: if the field name contains 'fecha' assume date input
-            type: (f.nomcampo && f.nomcampo.toLowerCase().includes('fecha')) ? 'date' : 'string',
-            value: f.valFiltro
-          }));
+          this.filterList = this.reportConfig.filters.map((f: any, idx: number) => {
+            const fieldKey = f.nomcampo || f.idDetvista;
+            const fieldKeyLower = fieldKey.toLowerCase();
+            
+            // Determine field type based on field name heuristics
+            let fieldType = 'string';
+            if (fieldKeyLower.includes('fecha') || fieldKeyLower.includes('date')) {
+              fieldType = 'date';
+            }
+            
+            return {
+              fieldKey: fieldKey,
+              conditional: this.mapFilterTypeToConditional(f.tipoFiltro),
+              connector: f.incluyente,
+              type: fieldType,
+              value: f.valFiltro,
+              required: fieldKeyLower.includes('fechainicio') || fieldKeyLower.includes('fechafin')
+            };
+          });
           console.log('Mapped filterList:', this.filterList);
         }
+
+        // Agregar filtros de fecha obligatorios si no existen en la configuración
+        const hasFechaInicio = this.filterList.some(f => f.fieldKey.toLowerCase().includes('fechainicio'));
+        const hasFechaFin = this.filterList.some(f => f.fieldKey.toLowerCase().includes('fechafin'));
+
+        if (!hasFechaInicio) {
+          this.filterList.unshift({
+            fieldKey: 'fechaInicio',
+            conditional: 'equal',
+            connector: 'AND',
+            type: 'date',
+            value: null,
+            required: true
+          });
+        }
+
+        if (!hasFechaFin) {
+          this.filterList.unshift({
+            fieldKey: 'fechaFin',
+            conditional: 'equal',
+            connector: 'AND',
+            type: 'date',
+            value: null,
+            required: true
+          });
+        }
+
+        console.log('Final filterList with date filters:', this.filterList);
         
         // Map settings
         this.reportSettings = [
@@ -153,10 +196,19 @@ export class GenerateReport implements OnInit {
       return;
     }
 
-    // Build query params from filter values
+    // Build query params from filter values (require user to provide fechas)
+    const fechaInicio = this.filterValues['fechaInicio'] ? this.formatDate(this.filterValues['fechaInicio']) : null;
+    const fechaFin = this.filterValues['fechaFin'] ? this.formatDate(this.filterValues['fechaFin']) : null;
+
+    if (!fechaInicio || !fechaFin) {
+      this.isLoading = false;
+      alert('Por favor seleccione Fecha inicio y Fecha fin para generar el reporte');
+      return;
+    }
+
     const queryParams: MesadasQueryParams = {
-      fechaInicio: this.filterValues['fechaInicio'] || '2024-01-01',
-      fechaFin: this.filterValues['fechaFin'] || '2024-12-31',
+      fechaInicio,
+      fechaFin,
       page: this.currentPage,
       size: this.pageSize
     };
@@ -246,6 +298,26 @@ export class GenerateReport implements OnInit {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  /**
+   * Helper: format a Date or ISO/string to YYYY-MM-DD
+   */
+  private formatDate(value: any): string {
+    if (!value) return '';
+    if (value instanceof Date) {
+      return value.toISOString().slice(0, 10);
+    }
+    // If it's a string, try to normalize to YYYY-MM-DD
+    try {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
+    } catch (e) {
+      // fallback
+    }
+    // If value already looks like YYYY-MM-DD, return as-is
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+    return String(value);
   }
 
   async onGenerateExcel(): Promise<void> {

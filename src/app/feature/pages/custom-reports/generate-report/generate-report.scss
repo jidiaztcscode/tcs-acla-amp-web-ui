@@ -20,6 +20,7 @@
 
 ::ng-deep .custom-date-picker .mat-mdc-input-element {
   text-align: center;
+  font-size: 13px;
 }
 
 ::ng-deep .custom-date-picker .mat-mdc-icon-button {
@@ -34,7 +35,15 @@
   display: block;
   color: variables.$red-davi;
 }
-// mat-datepicker-toggle-default-icon
+
+::ng-deep .custom-date-picker .mat-mdc-form-field-label {
+  font-size: 12px !important;
+}
+
+::ng-deep .custom-date-picker mat-error {
+  font-size: 11px !important;
+  color: variables.$red-davi;
+}
 
 .box-rounded {
   border-radius: 10px;

@@ -30,22 +30,46 @@
                 @for (filter of filterList; track $index) {
                     <tr>
                         <td>{{ filter.connector }}</td>
-                        <td>{{ filter.fieldKey }}</td>
+                        <td>
+                            @if (filter.required) {
+                                <strong>{{ filter.fieldKey }} <span style="color: red;">*</span></strong>
+                            } @else {
+                                {{ filter.fieldKey }}
+                            }
+                        </td>
                         <td>{{ filter.conditional }}</td>
                         <td>
                             @switch (filter.type) {
                                 @case ('date') {
                                     <mat-form-field appearance="outline" style="width: auto;" class="custom-date-picker">
-                                        <!-- Bind date to filterValues by key -->
-                                        <input matInput (focus)="picker.open()" [matDatepicker]="picker" id="davi-input-filter-{{$index}}" [(ngModel)]="filterValues[filter.fieldKey]" name="filter-{{$index}}">
-                                        <mat-hint>MM/DD/YYYY</mat-hint>
+                                        <mat-label [innerHTML]="filter.fieldKey"></mat-label>
+                                        <input 
+                                            matInput 
+                                            (focus)="picker.open()" 
+                                            [matDatepicker]="picker" 
+                                            id="davi-input-filter-{{$index}}" 
+                                            [(ngModel)]="filterValues[filter.fieldKey]" 
+                                            name="filter-{{$index}}"
+                                            [required]="filter.required"
+                                            placeholder="YYYY-MM-DD">
+                                        <mat-hint>YYYY-MM-DD</mat-hint>
                                         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                                         <mat-datepicker #picker></mat-datepicker>
+                                        @if (filter.required && !filterValues[filter.fieldKey]) {
+                                            <mat-error>Este campo es obligatorio</mat-error>
+                                        }
                                     </mat-form-field>
                                     }
                                 @case ('string') {
                                     <mat-form-field appearance="outline" style="width: auto; padding: 0 4px !important;">
-                                        <input matInput [(ngModel)]="filterValues[filter.fieldKey]" name="filter-{{$index}}">
+                                        <input 
+                                            matInput 
+                                            [(ngModel)]="filterValues[filter.fieldKey]" 
+                                            name="filter-{{$index}}"
+                                            [required]="filter.required">
+                                        @if (filter.required && !filterValues[filter.fieldKey]) {
+                                            <mat-error>Este campo es obligatorio</mat-error>
+                                        }
                                     </mat-form-field>
                                 }
                             }
