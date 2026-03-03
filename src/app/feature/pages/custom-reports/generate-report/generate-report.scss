@@ -101,3 +101,56 @@
   display: flex;
   justify-content: space-between;
 }
+
+// Estilos del paginador
+.paginador {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 8px 16px;
+  font-size: 10px;
+  border-top: 1px solid #ddd;
+  gap: 8px;
+}
+
+.paginador .info {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.paginador .controles {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 530px;
+}
+
+.paginador .controles button {
+  min-width: 30px;
+  padding: 6px 10px;
+  font-size: 10px;
+  background-color: #d50000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #b00000;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+}
+
+.paginador .controles span {
+  margin: 0 8px;
+  font-weight: bold;
+}

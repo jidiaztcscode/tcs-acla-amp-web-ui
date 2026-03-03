@@ -84,7 +84,7 @@ export class CustomReportList implements OnInit {
         const mres = await this.mesadasDatasource.consultarPagos(mesadasParams);
         if (isRight(mres)) {
           const page = mres.right;
-          const pagos: PagoMesada[] = page.items || [];
+          const pagos: PagoMesada[] = page.data || [];
           const mapped = pagos.map(p => ({
             category: 'Mesadas',
             name: `Pago ${p.fechaAbonoMesada} - ${p.nombrePensionado}`,
@@ -106,7 +106,7 @@ export class CustomReportList implements OnInit {
         const cres = await this.cuentasDatasource.consultarAperturas(cuentasParams);
         if (isRight(cres)) {
           const page = cres.right;
-          const items: AperturaCuenta[] = page.items || [];
+          const items: AperturaCuenta[] = page.data || [];
           const mapped = items.map(it => ({
             category: 'Cuentas',
             name: `Apertura ${it.fechaAperturaCuenta} - ${it.nombrePensionado}`,

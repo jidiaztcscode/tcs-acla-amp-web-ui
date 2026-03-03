@@ -228,9 +228,9 @@ export class GenerateReport implements OnInit {
       if (endpoint === 'pagos') {
         const result = await this.mesadasDatasource.consultarPagos(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.items;
-          this.totalRecords = result.right.totalRecords;
-          this.totalPages = result.right.totalPages;
+          this.resultsList = result.right.data;
+          this.totalRecords = result.right.total;
+          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
           this.currentPage = result.right.page;
           this.pageSize = result.right.pageSize;
           console.log('Pagos loaded:', this.resultsList);
@@ -241,9 +241,9 @@ export class GenerateReport implements OnInit {
       } else if (endpoint === 'rechazos') {
         const result = await this.mesadasDatasource.consultarRechazos(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.items;
-          this.totalRecords = result.right.totalRecords;
-          this.totalPages = result.right.totalPages;
+          this.resultsList = result.right.data;
+          this.totalRecords = result.right.total;
+          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
           this.currentPage = result.right.page;
           this.pageSize = result.right.pageSize;
           console.log('Rechazos loaded:', this.resultsList);
@@ -268,9 +268,9 @@ export class GenerateReport implements OnInit {
       } else if (endpoint === 'aperturas') {
         const result = await this.cuentasDatasource.consultarAperturas(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.items;
-          this.totalRecords = result.right.totalRecords;
-          this.totalPages = result.right.totalPages;
+          this.resultsList = result.right.data;
+          this.totalRecords = result.right.total;
+          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
           this.currentPage = result.right.page;
           this.pageSize = result.right.pageSize;
           console.log('Aperturas loaded:', this.resultsList);
@@ -281,9 +281,9 @@ export class GenerateReport implements OnInit {
       } else if (endpoint === 'inactivas') {
         const result = await this.cuentasDatasource.consultarInactivas(queryParams);
         if (isRight(result)) {
-          this.resultsList = result.right.items;
-          this.totalRecords = result.right.totalRecords;
-          this.totalPages = result.right.totalPages;
+          this.resultsList = result.right.data;
+          this.totalRecords = result.right.total;
+          this.totalPages = Math.ceil(result.right.total / result.right.pageSize);
           this.currentPage = result.right.page;
           this.pageSize = result.right.pageSize;
           console.log('Inactivas loaded:', this.resultsList);
@@ -428,7 +428,7 @@ export class GenerateReport implements OnInit {
   }
 
   onPageChange(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
+    if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
       this.onGenerate();
     }

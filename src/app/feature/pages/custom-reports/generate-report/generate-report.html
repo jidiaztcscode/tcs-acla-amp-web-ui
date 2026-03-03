@@ -152,5 +152,24 @@
                 }
             </tbody>
         </table>
+
+        <!-- Paginador -->
+        @if (totalPages > 1) {
+            <div class="paginador">
+                <div class="info">
+                    <!-- Mostrando {{ resultsList.length }} de {{ totalRecords }} registros -->
+                </div>
+
+                <div class="controles">
+                    <button (click)="onPageChange(1)" [disabled]="currentPage === 1">«</button>
+                    <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">‹</button>
+                    <span>{{ currentPage }} de {{ totalPages }}</span>
+                    <button (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
+                        ›
+                    </button>
+                    <button (click)="onPageChange(totalPages)" [disabled]="currentPage === totalPages">»</button>
+                </div>
+            </div>
+        }
     </div>
 </app-page-layout>
