@@ -1,7 +1,7 @@
 <app-page-layout>
 
     <div class="button-wrapper justify-left">
-        <app-title>Crear reportes personalizados</app-title>
+        <app-title>{{ isEditMode ? 'Modificar reportes personalizados' : 'Crear reportes personalizados' }}</app-title>
         <button mat-icon-button class="arrow-button" (click)="onToggle()">
             <mat-icon>{{ (isShow() ? 'arrow_forward' : 'arrow_downward') }} </mat-icon>
         </button>
