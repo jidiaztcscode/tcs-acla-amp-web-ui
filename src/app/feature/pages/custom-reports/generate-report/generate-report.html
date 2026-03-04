@@ -1,6 +1,6 @@
 <app-page-layout>
     <div class="button-wrapper">
-        <app-title>Reintegros exitosos</app-title>
+        <app-title>{{ reportConfig?.nomconsulta || 'Reporte' }}</app-title>
         <!-- Tabla configuracion reporte -->
         <table class="table-report-settings tabla-redondeada">
             @for (item of reportSettings; track $index) {
