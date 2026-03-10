@@ -146,7 +146,7 @@ export class GenerateReport implements OnInit {
           console.log('Mapped filterList:', this.filterList);
         }
 
-        // Agregar filtros de fecha obligatorios si no existen en la configuración
+        // Agregar filtros de fecha obligatorios si no existen en la configuraciÃ³n
         const hasFechaInicio = this.filterList.some(f => f.fieldKey.toLowerCase().includes('fechainicio'));
         const hasFechaFin = this.filterList.some(f => f.fieldKey.toLowerCase().includes('fechafin'));
 
@@ -196,7 +196,7 @@ export class GenerateReport implements OnInit {
         console.error('Error loading report config:', result.left);
       }
     } catch (error) {
-      this.errorMessage = 'Error inesperado al cargar configuración';
+      this.errorMessage = 'Error inesperado al cargar configuraciÃ³n';
       console.error('Unexpected error:', error);
     } finally {
       this.isLoading = false;
@@ -257,6 +257,8 @@ export class GenerateReport implements OnInit {
       'tipodocumento': 'tipoDocumento',
       'tipoid': 'tipoDocumento',
       'cuentapagadora': 'cuentaPagadora',
+      'cuentaempleador': 'cuentaEmpleador',
+      'numerocuentaempleador': 'cuentaEmpleador',
       'identificadordetalle': 'identificadorDetalle',
       'oficinaapertura': 'oficinaApertura',
       'fechaabonomesada': 'fechaAbonoMesada',

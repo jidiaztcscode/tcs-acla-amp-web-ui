@@ -124,20 +124,34 @@ export class CustomReport implements OnInit {
 
   // Allowed filters based on backend controller and frontend field keys
   private readonly allowedFilters = new Set([
-    'numeroIdEmpresa',      // empresa
-    'numeroAfiliacionPago', // afiliacion
-    'numeroCuentaPensionado', // cuentaPensionado
-    'numeroIdPensionado',   // documento
-    'tipoIdentificacion',   // tipoDocumento
-    'tipoId',               // tipoDocumento (alias)
-    'numeroCuentaPagadora'  // cuentaPagadora
+    'numeroidempresa',      // empresa
+    'numeroafiliacionpago', // afiliacion
+    'numerocuentapensionado', // cuentaPensionado
+    'numeroidpensionado',   // documento
+    'tipoidentificacion',   // tipoDocumento
+    'tipoid',               // tipoDocumento (alias)
+    'numerocuentapagadora'  // cuentaPagadora
   ]);
 
-  private readonly certificadosFilters = new Set([
-    'numeroDocumento',
-    'periodoNomina',
-    'banco',
-    'cuenta'
+  private readonly certificadosFilters = new Set([]);
+
+  private readonly aperturasFilters = new Set([
+    // Endpoint /api/cuentas/aperturas params (normalized)
+    'empresa',
+    'numeroidempresa',
+    'documento',
+    'numeroidpensionado',
+    'tipodocumento',
+    'tipoidentificacion',
+    'tipoid',
+    'cuentapensionado',
+    'numerocuentapensionado',
+    'cuentaempleador',
+    'numerocuentaempleador',
+    'cuentapagadora',
+    'numerocuentapagadora',
+    'afiliacion',
+    'numeroafiliacionpago'
   ]);
 
   onChangeCheck(checked: boolean, field: any) {
@@ -174,12 +188,28 @@ export class CustomReport implements OnInit {
     return name.includes('certificado');
   }
 
+  private isAperturasVista(): boolean {
+    const selected = this.dataGroup.find(v => v.idvista === this.selectedVistaId);
+    const name = selected?.nomvista?.toLowerCase() ?? '';
+    return name.includes('apertura');
+  }
+
+  private normalizeFieldKey(fieldKey: string): string {
+    return String(fieldKey).trim().toLowerCase().replace(/[\s_]/g, '');
+  }
+
   private getAllowedFilterKeys(): Set<string> {
-    return this.isCertificadosVista() ? this.certificadosFilters : this.allowedFilters;
+    if (this.isCertificadosVista()) {
+      return this.certificadosFilters;
+    }
+    if (this.isAperturasVista()) {
+      return this.aperturasFilters;
+    }
+    return this.allowedFilters;
   }
 
   private isFieldAllowedAsFilter(fieldKey: string): boolean {
-    const normalizedKey = String(fieldKey).trim();
+    const normalizedKey = this.normalizeFieldKey(fieldKey);
     return this.getAllowedFilterKeys().has(normalizedKey);
   }
 
@@ -188,8 +218,12 @@ export class CustomReport implements OnInit {
       .map(col => this.groupDataList.find(f => f.fieldKey === col.keyName && f.isSelected))
       .filter((field): field is FieldConfig => !!field);
 
-    const allowed = selectedByOrder.filter(field => this.isFieldAllowedAsFilter(field.fieldKey));
-    const source = this.isCertificadosVista() ? allowed : (allowed.length > 0 ? allowed : selectedByOrder);
+    const allowedSelected = selectedByOrder.filter(field => this.isFieldAllowedAsFilter(field.fieldKey));
+    const allowedAll = this.groupDataList.filter(field => this.isFieldAllowedAsFilter(field.fieldKey));
+
+    const source = this.isCertificadosVista()
+      ? allowedAll
+      : (allowedSelected.length > 0 ? allowedSelected : selectedByOrder);
 
     this.displayedColumnsFilter = source.map(field => ({
       keyName: field.fieldKey,
@@ -198,10 +232,8 @@ export class CustomReport implements OnInit {
     }));
     console.log('this.displayedColumnsFilter ==>>>>', this.displayedColumnsFilter);
   }
-
-
-  changeTab(index: number) {
-    // Validar que haya columnas seleccionadas antes de ir a filtros o información
+changeTab(index: number) {
+    // Validar que haya columnas seleccionadas antes de ir a filtros o informaciÃƒÂ³n
     if ((index === 1 || index === 2) && this.displayedColumns.length < 1) {
       alert('Debe seleccionar al menos una columna en "Grupo de datos" antes de continuar');
       this.selectedTab = 0;
@@ -231,7 +263,7 @@ export class CustomReport implements OnInit {
     if (this.filtersList.length > 1) {
       this.filtersList.splice(index, 1);
     } else {
-      // Si es el último filtro, solo lo reiniciamos
+      // Si es el ÃƒÂºltimo filtro, solo lo reiniciamos
       this.filtersList[0] = { idDetvista: null, conditional: '', connector: '' };
     }
   }
@@ -358,13 +390,13 @@ export class CustomReport implements OnInit {
           }));
         }
         
-        console.log('Configuración de reporte cargada:', config);
+        console.log('ConfiguraciÃƒÂ³n de reporte cargada:', config);
       } else {
         this.errorMessage = result.left.message;
-        console.error('Error cargando configuración:', result.left);
+        console.error('Error cargando configuraciÃƒÂ³n:', result.left);
       }
     } catch (error) {
-      this.errorMessage = 'Error inesperado al cargar configuración';
+      this.errorMessage = 'Error inesperado al cargar configuraciÃƒÂ³n';
       console.error('Unexpected error loading config:', error);
     } finally {
       this.isLoading = false;
