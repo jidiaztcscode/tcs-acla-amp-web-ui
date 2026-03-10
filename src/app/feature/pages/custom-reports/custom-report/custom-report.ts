@@ -107,18 +107,19 @@ export class CustomReport implements OnInit {
     moveItemInArray(this.displayedColumns, event.previousIndex, event.currentIndex);
     console.log('this.displayedColumns ===>', this.displayedColumns)
     // this.displayedColumnsFilter = this.displayedColumns;
+    this.generateSampleDataTable();
   }
 
   generateSampleDataTable() {
-    let sampleData: any = [];
-    let sampleFill = 'xxxxxx';
+    if (this.displayedColumns.length === 0) {
+      this.data = [];
+      return;
+    }
 
-    sampleData = Array.from({ length: 3 }, () =>
-      Object.fromEntries(this.displayedColumns
-      .map(col => [ col.text, sampleFill ]))
+    const sampleFill = 'xxxxxx';
+    this.data = Array.from({ length: 3 }, () =>
+      Object.fromEntries(this.displayedColumns.map(col => [col.keyName, sampleFill]))
     );
-
-    this.data = sampleData;
   }
 
   // Allowed filters based on backend controller and frontend field keys
@@ -145,20 +146,42 @@ export class CustomReport implements OnInit {
         this.displayedColumns.splice(itemRemove, 1);
       }
     }
-    // Filter only allowed columns for filters
-    this.displayedColumnsFilter = 
-      this.groupDataList.filter((v: any) => v.isSelected && this.isFieldAllowedAsFilter(v.fieldKey))
-        .map((value: any) => {
-          return { keyName: value.fieldKey, text: value.fieldName, idDetvista: value.idDetvista }
-        });
-    console.log('this.displayedColumnsFilter ==>>>>', this.displayedColumnsFilter);
+    this.refreshDisplayedColumnsFilter();
     this.generateSampleDataTable();
+  }
+
+  onFieldNameChange(field: FieldConfig) {
+    if (!field.isSelected) {
+      return;
+    }
+    const displayed = this.displayedColumns.find(col => col.keyName === field.fieldKey);
+    if (displayed) {
+      displayed.text = field.fieldName;
+    }
+    this.refreshDisplayedColumnsFilter();
   }
 
   private isFieldAllowedAsFilter(fieldKey: string): boolean {
     const normalizedKey = String(fieldKey).trim();
     return this.allowedFilters.has(normalizedKey);
   }
+
+  private refreshDisplayedColumnsFilter(): void {
+    const selectedByOrder = this.displayedColumns
+      .map(col => this.groupDataList.find(f => f.fieldKey === col.keyName && f.isSelected))
+      .filter((field): field is FieldConfig => !!field);
+
+    const allowed = selectedByOrder.filter(field => this.isFieldAllowedAsFilter(field.fieldKey));
+    const source = allowed.length > 0 ? allowed : selectedByOrder;
+
+    this.displayedColumnsFilter = source.map(field => ({
+      keyName: field.fieldKey,
+      text: field.fieldName,
+      idDetvista: field.idDetvista
+    }));
+    console.log('this.displayedColumnsFilter ==>>>>', this.displayedColumnsFilter);
+  }
+
 
   changeTab(index: number) {
     // Validar que haya columnas seleccionadas antes de ir a filtros o información
@@ -241,14 +264,7 @@ export class CustomReport implements OnInit {
         // Map VistaColumna to FieldConfig
         this.groupDataList = columns.map(col => this.mapColumnToFieldConfig(col));
         console.log('Columnas cargadas:', this.groupDataList);
-        // Initialize displayedColumnsFilter with only allowed filters
-        this.displayedColumnsFilter = this.groupDataList
-          .filter(field => field.isSelected && this.isFieldAllowedAsFilter(field.fieldKey))
-          .map(field => ({
-            keyName: field.fieldKey,
-            text: field.fieldName,
-            idDetvista: field.idDetvista
-          }));
+        this.refreshDisplayedColumnsFilter();
       } else {
         this.errorMessage = result.left.message;
         console.error('Error cargando columnas:', result.left);
@@ -311,14 +327,7 @@ export class CustomReport implements OnInit {
                 });
               }
             });
-            
-            this.displayedColumnsFilter = this.groupDataList
-              .filter(field => field.isSelected && this.isFieldAllowedAsFilter(field.fieldKey))
-              .map(field => ({
-                keyName: field.fieldKey,
-                text: field.fieldName,
-                idDetvista: field.idDetvista
-              }));
+            this.refreshDisplayedColumnsFilter();
           }
         }
         
@@ -362,11 +371,14 @@ export class CustomReport implements OnInit {
       return;
     }
 
-    const selectedFields = this.groupDataList.filter(f => f.isSelected);
-    if (selectedFields.length === 0) {
+    if (this.displayedColumns.length === 0) {
       alert('Por favor seleccione al menos una columna');
       return;
     }
+
+    const selectedFields = this.displayedColumns
+      .map(col => this.groupDataList.find(f => f.fieldKey === col.keyName && f.isSelected))
+      .filter((field): field is FieldConfig => !!field);
 
     const reportConfig: ReportConfig = {
       nomconsulta: this.reportName,
@@ -435,3 +447,8 @@ export class CustomReport implements OnInit {
   }
   
 }
+
+
+
+
+

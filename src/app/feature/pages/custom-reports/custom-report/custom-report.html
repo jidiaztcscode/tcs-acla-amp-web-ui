@@ -85,7 +85,7 @@
                                 <td>
                                     @if (field.isSelected) {
                                         <mat-form-field appearance="outline" style="width: 180px;">
-                                            <input id="davi-input-fieldName-{{$index}}" matInput [(ngModel)]="field.fieldName">
+                                            <input id="davi-input-fieldName-{{$index}}" matInput [(ngModel)]="field.fieldName" (ngModelChange)="onFieldNameChange(field)">
                                         </mat-form-field>
                                     } @else {
                                         {{ field.fieldName }}
