@@ -63,6 +63,10 @@ export interface MesadasQueryParams {
   documento?: number;
   tipoDocumento?: string;
   cuentaPagadora?: number;
+  numeroDocumento?: string;
+  periodoNomina?: string;
+  banco?: string;
+  cuenta?: string;
   page?: number;
   size?: number;
   sort?: string;
@@ -70,3 +74,4 @@ export interface MesadasQueryParams {
   // Allow additional dynamic filter fields
   [key: string]: string | number | undefined;
 }
+

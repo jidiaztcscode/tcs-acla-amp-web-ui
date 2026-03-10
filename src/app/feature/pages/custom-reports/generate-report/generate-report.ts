@@ -259,7 +259,11 @@ export class GenerateReport implements OnInit {
       'cuentapagadora': 'cuentaPagadora',
       'identificadordetalle': 'identificadorDetalle',
       'oficinaapertura': 'oficinaApertura',
-      'fechaabonomesada': 'fechaAbonoMesada'
+      'fechaabonomesada': 'fechaAbonoMesada',
+      'numerodocumento': 'numeroDocumento',
+      'periodonomina': 'periodoNomina',
+      'banco': 'banco',
+      'cuenta': 'cuenta'
     };
 
     return nameMap[normalized] || String(fieldName).trim();
@@ -376,10 +380,7 @@ export class GenerateReport implements OnInit {
     }
 
     if (endpoint === 'certificados') {
-      const result = await this.mesadasDatasource.consultarCertificados(
-        queryParams.fechaInicio,
-        queryParams.fechaFin
-      );
+      const result = await this.mesadasDatasource.consultarCertificados(queryParams);
       if (isRight(result)) return result.right;
       this.errorMessage = result.left.message;
       alert('Error al generar reporte: ' + result.left.message);
@@ -416,14 +417,6 @@ export class GenerateReport implements OnInit {
 
     const firstResponse = await this.fetchPage(endpoint, firstQueryParams);
     if (!firstResponse) return null;
-
-    if (endpoint === 'certificados') {
-      const certItems = Array.isArray(firstResponse) ? firstResponse : [];
-      this.lastExportCacheKey = exportCacheKey;
-      this.lastExportCacheData = certItems;
-      return [...certItems];
-    }
-
     const firstItems = Array.isArray(firstResponse?.data)
       ? firstResponse.data
       : Array.isArray(firstResponse?.items)
@@ -489,14 +482,7 @@ export class GenerateReport implements OnInit {
       const response = await this.fetchPage(endpoint, queryParams);
       if (!response) return;
 
-      if (endpoint === 'certificados') {
-        this.resultsList = Array.isArray(response) ? response : [];
-        this.totalRecords = this.resultsList.length;
-        this.totalPages = 1;
-        this.currentPage = 1;
-      } else {
-        this.applyPaginatedResponse(response);
-      }
+      this.applyPaginatedResponse(response);
     } catch (error) {
       console.error('Error generating report:', error);
       alert('Error inesperado al generar el reporte');
@@ -672,3 +658,9 @@ export class GenerateReport implements OnInit {
   }
   
 }
+
+
+
+
+
+

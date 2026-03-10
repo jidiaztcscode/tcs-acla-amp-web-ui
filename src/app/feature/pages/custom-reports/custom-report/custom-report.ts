@@ -133,6 +133,13 @@ export class CustomReport implements OnInit {
     'numeroCuentaPagadora'  // cuentaPagadora
   ]);
 
+  private readonly certificadosFilters = new Set([
+    'numeroDocumento',
+    'periodoNomina',
+    'banco',
+    'cuenta'
+  ]);
+
   onChangeCheck(checked: boolean, field: any) {
     if (checked) {
       this.displayedColumns.push({
@@ -161,9 +168,19 @@ export class CustomReport implements OnInit {
     this.refreshDisplayedColumnsFilter();
   }
 
+  private isCertificadosVista(): boolean {
+    const selected = this.dataGroup.find(v => v.idvista === this.selectedVistaId);
+    const name = selected?.nomvista?.toLowerCase() ?? '';
+    return name.includes('certificado');
+  }
+
+  private getAllowedFilterKeys(): Set<string> {
+    return this.isCertificadosVista() ? this.certificadosFilters : this.allowedFilters;
+  }
+
   private isFieldAllowedAsFilter(fieldKey: string): boolean {
     const normalizedKey = String(fieldKey).trim();
-    return this.allowedFilters.has(normalizedKey);
+    return this.getAllowedFilterKeys().has(normalizedKey);
   }
 
   private refreshDisplayedColumnsFilter(): void {
@@ -172,7 +189,7 @@ export class CustomReport implements OnInit {
       .filter((field): field is FieldConfig => !!field);
 
     const allowed = selectedByOrder.filter(field => this.isFieldAllowedAsFilter(field.fieldKey));
-    const source = allowed.length > 0 ? allowed : selectedByOrder;
+    const source = this.isCertificadosVista() ? allowed : (allowed.length > 0 ? allowed : selectedByOrder);
 
     this.displayedColumnsFilter = source.map(field => ({
       keyName: field.fieldKey,
@@ -447,6 +464,9 @@ export class CustomReport implements OnInit {
   }
   
 }
+
+
+
 
 
 

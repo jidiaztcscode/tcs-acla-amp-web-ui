@@ -8,7 +8,7 @@ import { CertificadoMesada, MesadasQueryParams, PagoMesada, RechazoMesada } from
 export interface IMesadasDatasource {
   consultarPagos(params: MesadasQueryParams): Promise<Either<Error, PaginatedResponse<PagoMesada>>>;
   consultarRechazos(params: MesadasQueryParams): Promise<Either<Error, PaginatedResponse<RechazoMesada>>>;
-  consultarCertificados(fechaInicio: string, fechaFin: string): Promise<Either<Error, CertificadoMesada[]>>;
+  consultarCertificados(params: MesadasQueryParams): Promise<Either<Error, PaginatedResponse<CertificadoMesada>>>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,14 +44,11 @@ export class MesadasDatasource implements IMesadasDatasource {
     }
   }
 
-  async consultarCertificados(fechaInicio: string, fechaFin: string): Promise<Either<Error, CertificadoMesada[]>> {
+  async consultarCertificados(params: MesadasQueryParams): Promise<Either<Error, PaginatedResponse<CertificadoMesada>>> {
     try {
-      const params = new HttpParams()
-        .set('fechaInicio', fechaInicio)
-        .set('fechaFin', fechaFin);
-      
+      const httpParams = this.buildHttpParams(params);
       const data = await firstValueFrom(
-        this.http.get<CertificadoMesada[]>(`${this.apiUrl}/certificados`, { params })
+        this.http.get<PaginatedResponse<CertificadoMesada>>(`${this.apiUrl}/certificados`, { params: httpParams })
       );
       return right(data);
     } catch (e) {
@@ -82,6 +79,18 @@ export class MesadasDatasource implements IMesadasDatasource {
     if (params.cuentaPagadora !== undefined) {
       httpParams = httpParams.set('cuentaPagadora', params.cuentaPagadora.toString());
     }
+    if (params.numeroDocumento) {
+      httpParams = httpParams.set('numeroDocumento', params.numeroDocumento);
+    }
+    if (params.periodoNomina) {
+      httpParams = httpParams.set('periodoNomina', params.periodoNomina);
+    }
+    if (params.banco) {
+      httpParams = httpParams.set('banco', params.banco);
+    }
+    if (params.cuenta) {
+      httpParams = httpParams.set('cuenta', params.cuenta);
+    }
     // Backend expects 'page' and 'size' parameters
     if (params.page !== undefined) {
       httpParams = httpParams.set('page', params.page.toString());
@@ -100,3 +109,8 @@ export class MesadasDatasource implements IMesadasDatasource {
     return httpParams;
   }
 }
+
+
+
+
+
