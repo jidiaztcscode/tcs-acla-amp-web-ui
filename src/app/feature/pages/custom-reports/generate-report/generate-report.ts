@@ -38,12 +38,18 @@ export class GenerateReport implements OnInit {
   filterValues: { [key: string]: any } = {};
   vistaFieldById: { [key: number]: string } = {};
 
+  // Get filtered list without fechaInicio and fechaFin
+  get filteredFilterList(): any[] {
+    return this.filterList.filter(f => !['fechainicio', 'fechafin'].includes(String(f.fieldKey).toLowerCase()));
+  }
+
   resultsList: any[] = [];
   columnsList: any[] = [];
 
   sizeNumbers = Array.from({ length: 12 }, (_, i) => i + 1);
 
   reportSettings: any[] = [];
+  unsupportedFilters: string[] = [];
 
   // Pagination
   currentPage: number = 1;
@@ -54,6 +60,14 @@ export class GenerateReport implements OnInit {
   private readonly exportConcurrency: number = 4;
   private lastExportCacheKey: string = '';
   private lastExportCacheData: any[] | null = null;
+  private readonly mesadasAllowedFilters = new Set([
+    'empresa',
+    'afiliacion',
+    'cuentaPensionado',
+    'documento',
+    'tipoDocumento',
+    'cuentaPagadora'
+  ]);
 
   async ngOnInit(): Promise<void> {
     const params = this.activatedRoute.snapshot.params;
@@ -92,12 +106,14 @@ export class GenerateReport implements OnInit {
         
         // Map columns
         if (this.reportConfig.columns) {
-          this.columnsList = this.reportConfig.columns.map(col => ({
-            keyName: col.nomcampo,
-            text: col.nomcampo,
-            align: col.tipojust === 'D' ? 'right' : 'left',
-            sum: col.sumcolumna === 'S'
-          }));
+          this.columnsList = this.reportConfig.columns
+            .filter(col => !['fechaInicio', 'fechaFin'].includes(col.nomcampo.toLowerCase()))
+            .map(col => ({
+              keyName: col.nomcampo,
+              text: col.nomcampo,
+              align: col.tipojust === 'D' ? 'right' : 'left',
+              sum: col.sumcolumna === 'S'
+            }));
         }
         
         // Map filters (resolve by name first; fallback to idDetvista)
@@ -121,6 +137,12 @@ export class GenerateReport implements OnInit {
               required: fieldKeyLower.includes('fechainicio') || fieldKeyLower.includes('fechafin')
             };
           });
+
+          this.filterList.forEach(filter => {
+            if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
+              this.filterValues[String(filter.fieldKey).trim()] = filter.value;
+            }
+          });
           console.log('Mapped filterList:', this.filterList);
         }
 
@@ -128,15 +150,21 @@ export class GenerateReport implements OnInit {
         const hasFechaInicio = this.filterList.some(f => f.fieldKey.toLowerCase().includes('fechainicio'));
         const hasFechaFin = this.filterList.some(f => f.fieldKey.toLowerCase().includes('fechafin'));
 
+        // Set default dates: fechaInicio as minimum date (1900-01-01) and fechaFin as current system date
+        const defaultFechaInicio = new Date('1900-01-01');
+        const defaultFechaFin = new Date();
+
         if (!hasFechaInicio) {
           this.filterList.unshift({
             fieldKey: 'fechaInicio',
             conditional: 'equal',
             connector: 'AND',
             type: 'date',
-            value: null,
+            value: defaultFechaInicio,
             required: true
           });
+          // Set default value in filterValues
+          this.filterValues['fechaInicio'] = defaultFechaInicio;
         }
 
         if (!hasFechaFin) {
@@ -145,9 +173,12 @@ export class GenerateReport implements OnInit {
             conditional: 'equal',
             connector: 'AND',
             type: 'date',
-            value: null,
+            value: defaultFechaFin,
             required: true
           });
+          // Set default value in filterValues
+          this.filterValues['fechaFin'] = defaultFechaFin;
+
         }
 
         console.log('Final filterList with date filters:', this.filterList);
@@ -205,27 +236,33 @@ export class GenerateReport implements OnInit {
   }
 
   private mapFieldNameToParamName(fieldName: string): string {
-    // Map common field names to query parameter names
+    const normalized = String(fieldName)
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_]/g, '');
+
+    // Normalize aliases from report metadata to backend query params.
     const nameMap: { [key: string]: string } = {
-      'fechaInicio': 'fechaInicio',
-      'fechaFin': 'fechaFin',
+      'fechainicio': 'fechaInicio',
+      'fechafin': 'fechaFin',
       'empresa': 'empresa',
+      'numeroidempresa': 'empresa',
+      'nitempresa': 'empresa',
       'afiliacion': 'afiliacion',
-      'numeroAfiliacionPago': 'afiliacion',
-      'cuentaPensionado': 'cuentaPensionado',
-      'numeroCuentaPensionado': 'cuentaPensionado',
+      'numeroafiliacionpago': 'afiliacion',
+      'cuentapensionado': 'cuentaPensionado',
+      'numerocuentapensionado': 'cuentaPensionado',
       'documento': 'documento',
-      'tipoDocumento': 'tipoDocumento',
+      'numeroidpensionado': 'documento',
+      'tipodocumento': 'tipoDocumento',
       'tipoid': 'tipoDocumento',
-      'cuentaPagadora': 'cuentaPagadora',
-      'identificadorDetalle': 'identificadorDetalle',
-      'oficinaApertura': 'oficinaApertura',
-      'fechaAbonoMesada': 'fechaAbonoMesada',
-      'numeroidPensionado': 'numeroidPensionado'
+      'cuentapagadora': 'cuentaPagadora',
+      'identificadordetalle': 'identificadorDetalle',
+      'oficinaapertura': 'oficinaApertura',
+      'fechaabonomesada': 'fechaAbonoMesada'
     };
-    
-    // Return mapped name or use fieldName as-is if no mapping exists
-    return nameMap[fieldName] || fieldName;
+
+    return nameMap[normalized] || String(fieldName).trim();
   }
 
   private applyPaginatedResponse(response: any): void {
@@ -264,7 +301,8 @@ export class GenerateReport implements OnInit {
     return endpointMap[this.vista.idvista] || null;
   }
 
-  private buildQueryParams(page: number, size: number): MesadasQueryParams | null {
+  private buildQueryParams(endpoint: string, page: number, size: number): MesadasQueryParams | null {
+    this.unsupportedFilters = [];
     const fechaInicio = this.filterValues['fechaInicio'] ? this.formatDate(this.filterValues['fechaInicio']) : null;
     const fechaFin = this.filterValues['fechaFin'] ? this.formatDate(this.filterValues['fechaFin']) : null;
 
@@ -281,16 +319,23 @@ export class GenerateReport implements OnInit {
     };
 
     this.filterList.forEach(filter => {
-      const fieldKey = filter.fieldKey;
+      const fieldKey = String(filter.fieldKey).trim();
       const value = this.filterValues[fieldKey];
 
       if (fieldKey === 'fechaInicio' || fieldKey === 'fechaFin') {
         return;
       }
 
-      if (value !== null && value !== undefined && value !== '') {
+      const normalizedValue = typeof value === 'string' ? value.trim() : value;
+      if (normalizedValue !== null && normalizedValue !== undefined && normalizedValue !== '') {
         const paramName = this.mapFieldNameToParamName(fieldKey);
-        (queryParams as any)[paramName] = value;
+        if ((endpoint === 'pagos' || endpoint === 'rechazos') && !this.mesadasAllowedFilters.has(paramName)) {
+          if (!this.unsupportedFilters.includes(fieldKey)) {
+            this.unsupportedFilters.push(fieldKey);
+          }
+          return;
+        }
+        (queryParams as any)[paramName] = normalizedValue;
       }
     });
 
@@ -357,7 +402,7 @@ export class GenerateReport implements OnInit {
     }
 
     const exportPageSize = this.exportPageSize;
-    const firstQueryParams = this.buildQueryParams(1, exportPageSize);
+    const firstQueryParams = this.buildQueryParams(endpoint, 1, exportPageSize);
     if (!firstQueryParams) return null;
 
     const cacheParams = { ...firstQueryParams };
@@ -436,7 +481,7 @@ export class GenerateReport implements OnInit {
       alert('No se pudo determinar el endpoint para esta vista');
       return;
     }
-    const queryParams = this.buildQueryParams(this.currentPage, this.pageSize);
+    const queryParams = this.buildQueryParams(endpoint, this.currentPage, this.pageSize);
     if (!queryParams) return;
 
     this.isLoading = true;

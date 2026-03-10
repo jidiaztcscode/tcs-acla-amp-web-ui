@@ -121,6 +121,17 @@ export class CustomReport implements OnInit {
     this.data = sampleData;
   }
 
+  // Allowed filters based on backend controller and frontend field keys
+  private readonly allowedFilters = new Set([
+    'numeroIdEmpresa',      // empresa
+    'numeroAfiliacionPago', // afiliacion
+    'numeroCuentaPensionado', // cuentaPensionado
+    'numeroIdPensionado',   // documento
+    'tipoIdentificacion',   // tipoDocumento
+    'tipoId',               // tipoDocumento (alias)
+    'numeroCuentaPagadora'  // cuentaPagadora
+  ]);
+
   onChangeCheck(checked: boolean, field: any) {
     if (checked) {
       this.displayedColumns.push({
@@ -134,14 +145,19 @@ export class CustomReport implements OnInit {
         this.displayedColumns.splice(itemRemove, 1);
       }
     }
+    // Filter only allowed columns for filters
     this.displayedColumnsFilter = 
-      this.groupDataList.filter((v: any) => v.isSelected)
+      this.groupDataList.filter((v: any) => v.isSelected && this.isFieldAllowedAsFilter(v.fieldKey))
         .map((value: any) => {
           return { keyName: value.fieldKey, text: value.fieldName, idDetvista: value.idDetvista }
         });
     console.log('this.displayedColumnsFilter ==>>>>', this.displayedColumnsFilter);
-    // this.displayedColumnsFilter = JSON.parse(JSON.stringify(this.displayedColumns));
     this.generateSampleDataTable();
+  }
+
+  private isFieldAllowedAsFilter(fieldKey: string): boolean {
+    const normalizedKey = String(fieldKey).trim();
+    return this.allowedFilters.has(normalizedKey);
   }
 
   changeTab(index: number) {
@@ -215,7 +231,7 @@ export class CustomReport implements OnInit {
     await this.loadVistaColumns(vistaId);
   }
 
-  async loadVistaColumns(vistaId: number): Promise<void> {
+   async loadVistaColumns(vistaId: number): Promise<void> {
     this.isLoading = true;
     try {
       const result = await this.vistaDatasource.obtenerColumnas(vistaId);
@@ -225,6 +241,14 @@ export class CustomReport implements OnInit {
         // Map VistaColumna to FieldConfig
         this.groupDataList = columns.map(col => this.mapColumnToFieldConfig(col));
         console.log('Columnas cargadas:', this.groupDataList);
+        // Initialize displayedColumnsFilter with only allowed filters
+        this.displayedColumnsFilter = this.groupDataList
+          .filter(field => field.isSelected && this.isFieldAllowedAsFilter(field.fieldKey))
+          .map(field => ({
+            keyName: field.fieldKey,
+            text: field.fieldName,
+            idDetvista: field.idDetvista
+          }));
       } else {
         this.errorMessage = result.left.message;
         console.error('Error cargando columnas:', result.left);
@@ -289,7 +313,7 @@ export class CustomReport implements OnInit {
             });
             
             this.displayedColumnsFilter = this.groupDataList
-              .filter(field => field.isSelected)
+              .filter(field => field.isSelected && this.isFieldAllowedAsFilter(field.fieldKey))
               .map(field => ({
                 keyName: field.fieldKey,
                 text: field.fieldName,

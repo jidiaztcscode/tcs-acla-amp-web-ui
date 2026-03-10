@@ -27,7 +27,7 @@
                 </tr>
             </thead>
             <tbody>
-                @for (filter of filterList; track $index) {
+                @for (filter of filteredFilterList; track $index) {
                     <tr>
                         <td>{{ filter.connector }}</td>
                         <td>
@@ -77,6 +77,13 @@
                 }
             </tbody>
         </table>
+        @if (unsupportedFilters.length > 0) {
+            <div style="margin-top: 8px; padding: 10px 12px; border: 1px solid #f0ad4e; background: #fff8e1; color: #7a5b00; border-radius: 6px;">
+                <strong>Filtros no aplicados para este reporte:</strong>
+                {{ unsupportedFilters.join(', ') }}.
+                Solo se enviaron: empresa, afiliacion, cuentaPensionado, documento, tipoDocumento y cuentaPagadora.
+            </div>
+        }
     </div>
     <div class="button-wrapper select-format-container">
        <div class="box-rounded">
