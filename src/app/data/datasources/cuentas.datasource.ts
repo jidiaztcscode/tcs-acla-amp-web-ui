@@ -20,7 +20,19 @@ export class CuentasDatasource implements ICuentasDatasource {
 
   async consultarAperturas(params: CuentasQueryParams): Promise<Either<Error, PaginatedResponse<AperturaCuenta>>> {
     try {
-      const httpParams = this.buildHttpParams(params);
+      let httpParams = this.buildBaseParams(params);
+      if (params.cuentaPensionado !== undefined) {
+        httpParams = httpParams.set('cuentaPensionado', params.cuentaPensionado.toString());
+      }
+      if (params.cuentaEmpleador !== undefined) {
+        httpParams = httpParams.set('cuentaEmpleador', params.cuentaEmpleador.toString());
+      }
+      if (params.cuentaPagadora !== undefined) {
+        httpParams = httpParams.set('cuentaPagadora', params.cuentaPagadora.toString());
+      }
+      if (params.afiliacion !== undefined) {
+        httpParams = httpParams.set('afiliacion', params.afiliacion.toString());
+      }
       const data = await firstValueFrom(
         this.http.get<PaginatedResponse<AperturaCuenta>>(`${this.apiUrl}/aperturas`, { params: httpParams })
       );
@@ -32,7 +44,10 @@ export class CuentasDatasource implements ICuentasDatasource {
 
   async consultarInactivas(params: CuentasQueryParams): Promise<Either<Error, PaginatedResponse<CuentaInactiva>>> {
     try {
-      const httpParams = this.buildHttpParams(params);
+      let httpParams = this.buildBaseParams(params);
+      if (params.cuentaEmpleador !== undefined) {
+        httpParams = httpParams.set('cuentaEmpleador', params.cuentaEmpleador.toString());
+      }
       const data = await firstValueFrom(
         this.http.get<PaginatedResponse<CuentaInactiva>>(`${this.apiUrl}/inactivas`, { params: httpParams })
       );
@@ -42,7 +57,7 @@ export class CuentasDatasource implements ICuentasDatasource {
     }
   }
 
-  private buildHttpParams(params: CuentasQueryParams): HttpParams {
+  private buildBaseParams(params: CuentasQueryParams): HttpParams {
     let httpParams = new HttpParams()
       .set('fechaInicio', params.fechaInicio)
       .set('fechaFin', params.fechaFin);
@@ -55,15 +70,6 @@ export class CuentasDatasource implements ICuentasDatasource {
     }
     if (params.tipoDocumento) {
       httpParams = httpParams.set('tipoDocumento', params.tipoDocumento);
-    }
-    if (params.cuentaPensionado !== undefined) {
-      httpParams = httpParams.set('cuentaPensionado', params.cuentaPensionado.toString());
-    }
-    if (params.cuentaPagadora !== undefined) {
-      httpParams = httpParams.set('cuentaPagadora', params.cuentaPagadora.toString());
-    }
-    if (params.afiliacion !== undefined) {
-      httpParams = httpParams.set('afiliacion', params.afiliacion.toString());
     }
 
     if (params.page !== undefined) {

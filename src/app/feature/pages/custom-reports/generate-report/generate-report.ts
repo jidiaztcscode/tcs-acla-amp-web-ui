@@ -69,6 +69,23 @@ export class GenerateReport implements OnInit {
     'cuentaPagadora'
   ]);
 
+  private readonly aperturasAllowedFilters = new Set([
+    'empresa',
+    'afiliacion',
+    'cuentaPensionado',
+    'documento',
+    'tipoDocumento',
+    'cuentaEmpleador',
+    'cuentaPagadora'
+  ]);
+
+  private readonly inactivasAllowedFilters = new Set([
+    'empresa',
+    'documento',
+    'tipoDocumento',
+    'cuentaEmpleador'
+  ]);
+
   async ngOnInit(): Promise<void> {
     const params = this.activatedRoute.snapshot.params;
     
@@ -336,6 +353,18 @@ export class GenerateReport implements OnInit {
       if (normalizedValue !== null && normalizedValue !== undefined && normalizedValue !== '') {
         const paramName = this.mapFieldNameToParamName(fieldKey);
         if ((endpoint === 'pagos' || endpoint === 'rechazos') && !this.mesadasAllowedFilters.has(paramName)) {
+          if (!this.unsupportedFilters.includes(fieldKey)) {
+            this.unsupportedFilters.push(fieldKey);
+          }
+          return;
+        }
+        if (endpoint === 'aperturas' && !this.aperturasAllowedFilters.has(paramName)) {
+          if (!this.unsupportedFilters.includes(fieldKey)) {
+            this.unsupportedFilters.push(fieldKey);
+          }
+          return;
+        }
+        if (endpoint === 'inactivas' && !this.inactivasAllowedFilters.has(paramName)) {
           if (!this.unsupportedFilters.includes(fieldKey)) {
             this.unsupportedFilters.push(fieldKey);
           }
@@ -660,6 +689,12 @@ export class GenerateReport implements OnInit {
   }
   
 }
+
+
+
+
+
+
 
 
 

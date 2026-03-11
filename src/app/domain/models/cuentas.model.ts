@@ -38,6 +38,7 @@ export interface CuentasQueryParams {
   empresa?: number;
   documento?: number;
   tipoDocumento?: string;
+  cuentaEmpleador?: number;
   cuentaPensionado?: number;
   cuentaPagadora?: number;
   afiliacion?: number;
@@ -46,3 +47,4 @@ export interface CuentasQueryParams {
   sort?: string;
   direction?: string;
 }
+

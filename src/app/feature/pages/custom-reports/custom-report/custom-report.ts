@@ -122,15 +122,17 @@ export class CustomReport implements OnInit {
     );
   }
 
-  // Allowed filters based on backend controller and frontend field keys
+  // Allowed filters for cuentas inactivas (backend controller)
   private readonly allowedFilters = new Set([
-    'numeroidempresa',      // empresa
-    'numeroafiliacionpago', // afiliacion
-    'numerocuentapensionado', // cuentaPensionado
-    'numeroidpensionado',   // documento
-    'tipoidentificacion',   // tipoDocumento
-    'tipoid',               // tipoDocumento (alias)
-    'numerocuentapagadora'  // cuentaPagadora
+    'empresa',
+    'numeroidempresa',
+    'documento',
+    'numeroidpensionado',
+    'tipodocumento',
+    'tipoidentificacion',
+    'tipoid',
+    'cuentaempleador',
+    'numerocuentaempleador'
   ]);
 
   private readonly certificadosFilters = new Set([]);
@@ -496,6 +498,7 @@ changeTab(index: number) {
   }
   
 }
+
 
 
 
